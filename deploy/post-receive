@@ -37,7 +37,8 @@ while read -r _old _new ref; do
 
   echo "--- Сборка сайта"
   NODE_ENV=development npm ci --include=dev --no-audit --no-fund --silent
-  NODE_ENV=development VITE_API_URL="https://$DOMAIN" npm run build
+  # same-origin: сайт раздаёт этот же сервер, поэтому API зовётся относительным путём
+  NODE_ENV=development VITE_API_URL=same-origin npm run build
   rm -rf server/public/site
   mkdir -p server/public
   cp -r dist server/public/site

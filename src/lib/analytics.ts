@@ -1,4 +1,4 @@
-import { API_URL } from '@/lib/content'
+import { API_ENABLED, API_URL } from '@/lib/content'
 
 const SESSION_KEY = 'remont:sid'
 const UTM_KEY = 'remont:utm'
@@ -55,7 +55,7 @@ export function track(type: string, meta: Record<string, unknown> = {}) {
     }
   }
 
-  if (!API_URL) return
+  if (!API_ENABLED) return
 
   const body = JSON.stringify({
     type,

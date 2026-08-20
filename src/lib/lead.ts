@@ -1,5 +1,5 @@
 import { site } from '@/config/site'
-import { API_URL } from '@/lib/content'
+import { API_ENABLED, API_URL } from '@/lib/content'
 import { captureUtm, track } from '@/lib/analytics'
 
 export type Lead = {
@@ -28,7 +28,7 @@ export async function submitLead(lead: Lead): Promise<LeadResult> {
     createdAt: new Date().toISOString(),
   }
 
-  const endpoint = API_URL ? API_URL + '/api/leads' : site.leadEndpoint
+  const endpoint = API_ENABLED ? API_URL + '/api/leads' : site.leadEndpoint
 
   if (!endpoint) {
     try {

@@ -14,7 +14,17 @@ import {
 import { regionList, site, stats as fallbackStats } from '@/config/site'
 import { asset } from '@/lib/asset'
 
-export const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+const RAW_API = (import.meta.env.VITE_API_URL ?? '').trim()
+
+/**
+ * Адрес API. Пустая строка означает «тот же origin» — так собирается версия,
+ * которую раздаёт сам сервер: относительные пути работают и по домену, и по IP,
+ * и не требуют CORS. Значение `same-origin` включает API без абсолютного адреса.
+ */
+export const API_URL = RAW_API === 'same-origin' ? '' : RAW_API.replace(/\/$/, '')
+
+/** Настроен ли вообще сервер. Если нет — сайт живёт на встроенных данных. */
+export const API_ENABLED = RAW_API !== ''
 
 export type SiteContent = {
   settings: {
@@ -170,7 +180,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
   const [content, setContent] = useState<SiteContent>(fallbackContent)
 
   useEffect(() => {
-    if (!API_URL) return
+    if (!API_ENABLED) return
     let cancelled = false
 
     fetch(API_URL + '/api/content')
