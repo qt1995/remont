@@ -25,6 +25,16 @@ while read -r _old _new ref; do
   echo "--- Раскладываем код"
   git --work-tree="$APP" --git-dir="$ROOT/repo.git" checkout -f main
 
+  # Хук обновляет сам себя из репозитория. Пишем через временный файл и rename:
+  # запущенный bash продолжает читать старый inode, новая версия применится
+  # со следующего пуша.
+  if ! cmp -s "$APP/deploy/post-receive" "$ROOT/repo.git/hooks/post-receive"; then
+    cp "$APP/deploy/post-receive" "$ROOT/repo.git/hooks/post-receive.new"
+    chmod 755 "$ROOT/repo.git/hooks/post-receive.new"
+    mv -f "$ROOT/repo.git/hooks/post-receive.new" "$ROOT/repo.git/hooks/post-receive"
+    echo "    хук деплоя обновлён — применится со следующего пуша"
+  fi
+
   cd "$APP"
 
   echo "--- Зависимости сервера"
