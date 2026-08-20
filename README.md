@@ -25,7 +25,8 @@ npm run dev
 Сайт умеет работать **без сервера**: если `VITE_API_URL` пуст, контент берётся из `src/data`,
 а заявки складываются в `localStorage`. Так он и живёт сейчас на GitHub Pages.
 
-Запуск всего сразу и выкладка на VPS — в [DEPLOY.md](DEPLOY.md).
+Боевой сервер: **http://188.225.33.9** (Timeweb Cloud), домен `pro-comfort.pro`.
+Деплой — `git push production main`. Подробности в [DEPLOY.md](DEPLOY.md).
 
 ## Публичная версия
 

@@ -13,7 +13,7 @@ PORT=4000
 echo "=== 1. Пакеты ==="
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq curl git nginx ufw ca-certificates sqlite3 >/dev/null
+apt-get install -y -qq curl git nginx ufw ca-certificates sqlite3 certbot python3-certbot-nginx >/dev/null
 
 if ! command -v node >/dev/null || [ "$(node -v | cut -c2-3)" -lt 20 ]; then
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash - >/dev/null 2>&1
@@ -159,6 +159,37 @@ ufw allow OpenSSH >/dev/null
 ufw allow 'Nginx Full' >/dev/null
 ufw --force enable >/dev/null
 ufw status | head -6
+
+echo "=== 9. Скрипт включения HTTPS ==="
+cat > /root/enable-https.sh <<'HTTPSEOF'
+#!/usr/bin/env bash
+# Включает HTTPS, когда A-запись домена уже указывает на этот сервер.
+set -euo pipefail
+DOMAIN="pro-comfort.pro"
+SERVER_IP=$(curl -fsS -4 ifconfig.me || hostname -I | awk '{print $1}')
+RESOLVED=$(getent ahostsv4 "$DOMAIN" | awk 'NR==1{print $1}')
+
+echo "Домен указывает на: ${RESOLVED:-(не резолвится)}"
+echo "Этот сервер:        $SERVER_IP"
+
+if [ "$RESOLVED" != "$SERVER_IP" ]; then
+  echo
+  echo "A-запись ещё не приехала. В панели reg.ru поставьте:"
+  echo "   @    A   $SERVER_IP"
+  echo "   www  A   $SERVER_IP"
+  echo "и запустите этот скрипт снова."
+  exit 1
+fi
+
+certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN"   --non-interactive --agree-tos --redirect -m "admin@$DOMAIN"
+
+systemctl reload nginx
+systemctl list-timers snap.certbot.renew.timer certbot.timer --all >/dev/null 2>&1 || true
+echo
+echo "Готово: https://$DOMAIN"
+echo "Сертификат продлевается автоматически (systemd-таймер certbot)."
+HTTPSEOF
+chmod +x /root/enable-https.sh
 
 echo
 echo "=== Сервер подготовлен ==="

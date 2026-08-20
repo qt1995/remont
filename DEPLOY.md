@@ -1,16 +1,146 @@
-# Выкладка: сайт, админка, база
+# Выкладка
 
 Проект состоит из трёх частей.
 
-| Папка | Что это | Куда едет |
+| Папка | Что это | Где работает |
 |---|---|---|
-| корень | публичный сайт (Vite + React) | статика: GitHub Pages, любой хостинг или сам сервер |
-| `server/` | API, база SQLite, приём заявок | Node на VPS |
-| `admin/` | админка (Vite + React) | собирается в `server/public/admin`, раздаётся сервером |
+| корень | публичный сайт (Vite + React) | раздаётся сервером; отдельная сборка живёт на GitHub Pages |
+| `server/` | API, база SQLite, приём заявок | Node на VPS, порт 4000 за nginx |
+| `admin/` | админка (Vite + React) | собирается в `server/public/admin`, открывается по `/admin` |
 
 Сайт работает и **без сервера**: если `VITE_API_URL` пуст, он берёт контент из `src/data`,
-а заявки складывает в `localStorage`. Сервер добавляет редактируемый контент, базу заявок,
-уведомления в Telegram и свою статистику.
+а заявки складывает в `localStorage`. Именно так собран вариант для GitHub Pages.
+
+---
+
+## Боевой сервер
+
+| | |
+|---|---|
+| Адрес | `188.225.33.9` (Timeweb Cloud), Ubuntu 24.04 |
+| Домен | `pro-comfort.pro` |
+| Каталог | `/srv/pro-comfort` |
+| Сервис | `procomfort` (systemd), пользователь `procomfort` |
+| База | `/srv/pro-comfort/data/app.db` |
+| Загрузки | `/srv/pro-comfort/uploads` |
+| Настройки | `/srv/pro-comfort/env` |
+
+База и загрузки лежат **вне рабочей копии** — деплой их не трогает.
+
+### Доступ
+
+В `~/.ssh/config` заведены два алиаса:
+
+```bash
+ssh pro-comfort        # пользователь procomfort, под ним идёт деплой
+ssh pro-comfort-root   # root, для обслуживания
+```
+
+Оба ходят по ключу `~/.ssh/pro-comfort`.
+
+---
+
+## Деплой одной командой
+
+```bash
+git push production main
+```
+
+Что происходит на сервере: код раскладывается в `/srv/pro-comfort/app`, ставятся
+зависимости, собираются админка и сайт, наполняются пустые таблицы базы, сервис
+перезапускается. Весь вывод сборки виден прямо в терминале, откуда пушите.
+
+Хук деплоя лежит в репозитории — `deploy/post-receive` — и обновляет сам себя при
+каждом пуше. Правки в нём применяются со **следующего** пуша: запущенный bash
+дочитывает старую версию.
+
+Если пуш прошёл, а сайт не отвечает:
+
+```bash
+ssh pro-comfort-root 'journalctl -u procomfort -n 50 --no-pager'
+```
+
+---
+
+## Подготовка сервера с нуля
+
+`deploy/provision.sh` поднимает чистую Ubuntu 24.04 целиком: node 20, nginx, certbot,
+ufw, системный пользователь, systemd-юнит, пустой репозиторий для пуша и права на
+перезапуск сервиса. Скрипт идемпотентный — повторный запуск ничего не сломает и
+не перезапишет `/srv/pro-comfort/env`.
+
+```bash
+scp deploy/provision.sh pro-comfort-root:/root/
+ssh pro-comfort-root 'bash /root/provision.sh'
+```
+
+Затем с локальной машины:
+
+```bash
+git remote add production pro-comfort:/srv/pro-comfort/repo.git
+git push production main
+```
+
+Первый пуш подтянет настоящий хук и попросит повторить команду — так и задумано.
+
+### Логин в админку
+
+Пароль администратора печатается один раз при первом наполнении базы. Сменить:
+
+```bash
+ssh pro-comfort "cd /srv/pro-comfort/app/server && DB_PATH=/srv/pro-comfort/data/app.db node -e \"
+import('bcryptjs').then(async (m) => {
+  const { db } = await import('./src/db.js');
+  db.prepare('UPDATE users SET password_hash = ? WHERE login = ?').run(m.default.hashSync('НОВЫЙ-ПАРОЛЬ', 10), 'admin');
+  console.log('готово');
+});\""
+```
+
+Штатно пароль меняется в самой админке, раздел «Настройки».
+
+---
+
+## HTTPS
+
+```bash
+ssh pro-comfort-root 'bash /root/enable-https.sh'
+```
+
+Скрипт сначала сверяет, куда указывает A-запись домена, и только потом зовёт certbot —
+иначе Let's Encrypt выдаст ошибку проверки. Сертификат продлевается сам, таймером certbot.
+
+**Пока A-запись не переведена на сервер, админка не работает по IP:** сессионная кука
+помечена `Secure` и по обычному HTTP браузер её не сохраняет. Сайт при этом открывается
+нормально.
+
+В панели reg.ru должно быть:
+
+```
+@    A   188.225.33.9
+www  A   188.225.33.9
+```
+
+---
+
+## Обслуживание
+
+```bash
+# статус и логи
+ssh pro-comfort-root 'systemctl status procomfort --no-pager'
+ssh pro-comfort-root 'journalctl -u procomfort -f'
+
+# бэкап базы и загрузок
+ssh pro-comfort-root 'sqlite3 /srv/pro-comfort/data/app.db ".backup /root/app-$(date +%F).db"'
+ssh pro-comfort-root 'tar czf /root/uploads-$(date +%F).tar.gz -C /srv/pro-comfort uploads'
+```
+
+Ежедневный бэкап базы по крону:
+
+```
+0 4 * * * sqlite3 /srv/pro-comfort/data/app.db ".backup '/root/backup/app-$(date +\%F).db'"
+```
+
+Вся база — один файл, копируется целиком.
 
 ---
 
@@ -34,174 +164,31 @@ npm install && npm run dev
 - админка — http://localhost:5181/admin/
 - API — http://localhost:4000
 
-Логин и пароль администратора печатаются один раз при `npm run seed`. Чтобы задать свои:
-
-```bash
-ADMIN_LOGIN=admin ADMIN_PASSWORD=ваш-пароль npm run seed
-```
-
-Файл `.env.local` в корне подключает сайт к локальному API:
+Адрес API для разработки кладётся в `.env.development.local`:
 
 ```
 VITE_API_URL=http://localhost:4000
 ```
 
----
+**Не в `.env.local`** — его Vite читает и при продовой сборке, и localhost уедет
+на боевой сайт.
 
-## Выкладка на VPS
-
-Дальше — Ubuntu 22.04+, nginx и домен `example.ru`. Подставьте свой.
-
-### 1. Node и код
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs git nginx
-sudo mkdir -p /var/www/remont && sudo chown $USER /var/www/remont
-git clone https://github.com/qt1995/remont.git /var/www/remont
-```
-
-### 2. Сервер и база
-
-```bash
-cd /var/www/remont/server
-npm ci --omit=dev
-cp .env.example .env
-```
-
-В `.env` обязательно задать:
-
-```
-PORT=4000
-JWT_SECRET=<длинная случайная строка>
-ALLOWED_ORIGINS=https://example.ru
-TRUST_PROXY=1
-COOKIE_SECURE=1
-```
-
-Секрет генерируется так:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-Затем наполняем базу и создаём администратора:
-
-```bash
-ADMIN_LOGIN=admin ADMIN_PASSWORD='свой-пароль' npm run seed
-```
-
-### 3. Админка и сайт
-
-```bash
-cd /var/www/remont/admin && npm ci && npm run build
-cd /var/www/remont && npm ci && VITE_API_URL=https://example.ru npm run build
-cp -r dist ../remont/server/public/site
-```
-
-Последняя строка кладёт сайт туда, откуда его раздаёт сам сервер. Если сайт остаётся
-на GitHub Pages — этот шаг пропускается, но тогда в `ALLOWED_ORIGINS` нужно добавить
-`https://qt1995.github.io`, а собирать сайт командой:
-
-```bash
-VITE_API_URL=https://example.ru npm run build:pages
-```
-
-### 4. Автозапуск
-
-```ini
-# /etc/systemd/system/remont.service
-[Unit]
-Description=Remont API
-After=network.target
-
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/remont/server
-ExecStart=/usr/bin/node src/index.js
-Restart=always
-RestartSec=5
-Environment=NODE_ENV=production
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```bash
-sudo chown -R www-data:www-data /var/www/remont/server/data /var/www/remont/server/uploads
-sudo systemctl enable --now remont
-sudo systemctl status remont
-```
-
-### 5. nginx и HTTPS
-
-```nginx
-server {
-  server_name example.ru;
-  client_max_body_size 10m;
-
-  location / {
-    proxy_pass http://127.0.0.1:4000;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-  }
-}
-```
-
-```bash
-sudo certbot --nginx -d example.ru
-```
-
-`client_max_body_size` должен быть не меньше лимита загрузки файлов (8 МБ на файл).
-
----
-
-## Обновление
-
-```bash
-cd /var/www/remont && git pull
-cd admin && npm ci && npm run build
-cd .. && npm ci && VITE_API_URL=https://example.ru npm run build && cp -r dist server/public/site
-cd server && npm ci --omit=dev && sudo systemctl restart remont
-```
-
-`npm run seed` при обновлении запускать не нужно: он наполняет только пустые таблицы и не
-трогает заявки. Команда `npm run reset` перезальёт контент заново — заявки, события и
-пользователи при этом сохраняются.
-
----
-
-## Бэкап
-
-Вся база — один файл. Достаточно копировать его и папку загрузок:
-
-```bash
-sqlite3 /var/www/remont/server/data/app.db ".backup '/backup/app-$(date +%F).db'"
-tar czf /backup/uploads-$(date +%F).tar.gz -C /var/www/remont/server uploads
-```
-
-Раз в сутки по крону:
-
-```
-0 4 * * * sqlite3 /var/www/remont/server/data/app.db ".backup '/backup/app-$(date +\%F).db'"
-```
+Значение `VITE_API_URL=same-origin` включает API без абсолютного адреса — так собирается
+версия, которую раздаёт сам сервер.
 
 ---
 
 ## Telegram и Яндекс.Метрика
 
-Оба подключаются из админки, раздел «Настройки» — в коде ничего править не нужно.
+Подключаются из админки, раздел «Настройки» — в коде ничего править не нужно.
 
-**Telegram.** Создайте бота у `@BotFather`, скопируйте токен. Напишите боту любое сообщение,
-затем узнайте ID чата у `@userinfobot` (для группы ID начинается с минуса — бота нужно
-добавить в группу). Вставьте оба значения и нажмите «Отправить тест».
+**Telegram.** Бот заводится у `@BotFather`, ID чата берётся у `@userinfobot` (для группы
+он начинается с минуса, бота нужно добавить в группу). После сохранения — кнопка
+«Отправить тест».
 
-**Метрика.** Вставьте номер счётчика — он подключится к сайту автоматически вместе с целями
-`lead`, `lead_open`, `calc_use`, `call_click`. Своя статистика в разделе «Сводка» работает
-независимо от Метрики и остаётся, даже если счётчик убрать.
+**Метрика.** Номер счётчика подключается к сайту автоматически вместе с целями
+`lead`, `lead_open`, `calc_use`, `call_click`. Своя статистика в разделе «Сводка»
+работает независимо и остаётся, даже если счётчик убрать.
 
 ---
 
@@ -209,12 +196,13 @@ tar czf /backup/uploads-$(date +%F).tar.gz -C /var/www/remont/server uploads
 
 | Задача | Файл |
 |---|---|
+| Подготовка сервера | `deploy/provision.sh` |
+| Хук деплоя | `deploy/post-receive` |
 | Схема базы и настройки по умолчанию | `server/src/db.js` |
-| Стартовый контент | `server/data/seed.json` (генерируется из `src/data` командой `node scripts/export-seed.mjs`) |
+| Стартовый контент | `server/data/seed.json` (генерируется из `src/data`: `node scripts/export-seed.mjs`) |
 | Публичный API контента | `server/src/routes/content.js` |
 | Приём заявок и событий | `server/src/routes/public.js` |
 | Админский API | `server/src/routes/admin.js` |
-| Универсальный CRUD по таблицам | `server/src/lib/crud.js` |
 | Сообщения в Telegram | `server/src/lib/telegram.js` |
 | Подключение сайта к API | `src/lib/content.tsx` |
 | Сбор событий и Метрика | `src/lib/analytics.ts` |
