@@ -167,9 +167,14 @@ cat > /root/enable-https.sh <<'HTTPSEOF'
 set -euo pipefail
 DOMAIN="pro-comfort.pro"
 SERVER_IP=$(curl -fsS -4 ifconfig.me || hostname -I | awk '{print $1}')
-RESOLVED=$(getent ahostsv4 "$DOMAIN" | awk 'NR==1{print $1}')
 
-echo "Домен указывает на: ${RESOLVED:-(не резолвится)}"
+# Спрашиваем авторитетный сервер зоны, а не локальный резолвер: публичные
+# кэши держат старый ответ до истечения TTL, хотя запись уже поменяли.
+NS=$(dig +short NS "$DOMAIN" | head -1)
+RESOLVED=$(dig +short @"${NS:-8.8.8.8}" "$DOMAIN" A | head -1)
+[ -n "$RESOLVED" ] || RESOLVED=$(getent ahostsv4 "$DOMAIN" | awk 'NR==1{print $1}')
+
+echo "Домен указывает на: ${RESOLVED:-(не резолвится)} (по данным ${NS:-резолвера})"
 echo "Этот сервер:        $SERVER_IP"
 
 if [ "$RESOLVED" != "$SERVER_IP" ]; then
