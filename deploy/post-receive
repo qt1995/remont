@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Git-хук деплоя. Срабатывает на `git push production main`:
+# раскладывает код, ставит зависимости, собирает админку и сайт, перезапускает сервис.
+#
+# Ставится на сервер скриптом deploy/provision.sh в /srv/pro-comfort/repo.git/hooks/.
+set -euo pipefail
+
+ROOT="/srv/pro-comfort"
+APP="$ROOT/app"
+
+# Настройки сервиса нужны и сборке (адрес API), и сиду (путь к базе).
+set -a
+# shellcheck disable=SC1091
+. "$ROOT/env"
+set +a
+
+DOMAIN="${SITE_DOMAIN:-pro-comfort.pro}"
+
+while read -r _old _new ref; do
+  if [ "$ref" != "refs/heads/main" ]; then
+    echo "  ветка $ref пропущена — деплоится только main"
+    continue
+  fi
+
+  echo "--- Раскладываем код"
+  git --work-tree="$APP" --git-dir="$ROOT/repo.git" checkout -f main
+
+  cd "$APP"
+
+  echo "--- Зависимости сервера"
+  npm --prefix server ci --omit=dev --no-audit --no-fund --silent
+
+  echo "--- Сборка админки"
+  npm --prefix admin ci --no-audit --no-fund --silent
+  npm --prefix admin run build --silent
+
+  echo "--- Сборка сайта"
+  npm ci --no-audit --no-fund --silent
+  VITE_API_URL="https://$DOMAIN" npm run build --silent
+  rm -rf server/public/site
+  mkdir -p server/public
+  cp -r dist server/public/site
+
+  echo "--- Наполнение базы (только пустые таблицы)"
+  npm --prefix server run seed --silent || true
+
+  echo "--- Перезапуск"
+  sudo /usr/bin/systemctl restart procomfort
+  sleep 2
+
+  # В sudoers разрешён ровно `systemctl is-active procomfort`, без флагов,
+  # поэтому сравниваем вывод, а не полагаемся на --quiet.
+  if [ "$(sudo /usr/bin/systemctl is-active procomfort)" = active ]; then
+    echo "--- Готово: https://$DOMAIN"
+  else
+    echo "!!! Сервис не поднялся. Смотрите: journalctl -u procomfort -n 50"
+    exit 1
+  fi
+done
