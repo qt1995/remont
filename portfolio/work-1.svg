@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Гостиная после ремонта под ключ">
+  <defs>
+    <linearGradient id="w" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7f2e8"/><stop offset="1" stop-color="#efe9df"/>
+    </linearGradient>
+    <linearGradient id="f" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c39a6b"/><stop offset="1" stop-color="#00000022"/>
+    </linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaf3fa"/><stop offset="1" stop-color="#cfe0ee"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#w)"/>
+  <rect y="410" width="800" height="190" fill="#c39a6b"/>
+  <rect y="410" width="800" height="190" fill="url(#f)" opacity="0.35"/>
+  <rect y="400" width="800" height="12" fill="#ffffff" opacity="0.85"/>
+  <g stroke="#00000018" stroke-width="2">
+    <path d="M0 470 L800 470"/><path d="M0 530 L800 530"/>
+  </g>
+  <rect x="470" y="90" width="250" height="250" fill="#ffffff"/>
+  <rect x="482" y="102" width="226" height="226" fill="url(#g)"/>
+  <path d="M595.0 102 L595.0 328" stroke="#ffffff" stroke-width="8"/>
+  <rect x="456" y="340" width="278" height="14" fill="#ffffff"/>
+  <rect x="90" y="330" width="300" height="80" rx="14" fill="#5d6a56"/>
+  <rect x="90" y="290" width="300" height="60" rx="16" fill="#7f8c7f"/>
+  <rect x="120" y="300" width="80" height="52" rx="12" fill="#ffffff" opacity="0.35"/>
+  <rect x="215" y="300" width="80" height="52" rx="12" fill="#ffffff" opacity="0.2"/>
+  <ellipse cx="240" cy="470" rx="190" ry="24" fill="#000" opacity="0.12"/>
+  <rect x="150" y="470" width="330" height="70" rx="10" fill="#00000022"/>
+  <rect x="120" y="140" width="150" height="110" fill="#ffffff" stroke="#5d6a56" stroke-width="6"/>
+  <path d="M134 234 L180.0 166 L213.0 204 L256 158 L256 234 Z" fill="#7f8c7f" opacity="0.7"/>
+  <path d="M620 410 L680 410 L672 340 L628 340 Z" fill="#5d6a56"/>
+  <g fill="#7f8c7f">
+    <path d="M650 340 q-50 -50 -66 -120 q46 24 66 92 z"/>
+    <path d="M650 340 q48 -60 54 -134 q-46 30 -54 106 z"/>
+  </g>
+  <rect width="800" height="600" fill="#0b1220" opacity="0.04"/>
+</svg>

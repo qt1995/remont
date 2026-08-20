@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Обеденная зона студии">
+  <defs>
+    <linearGradient id="w" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6f3ec"/><stop offset="1" stop-color="#eceae5"/>
+    </linearGradient>
+    <linearGradient id="f" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bf9a70"/><stop offset="1" stop-color="#00000022"/>
+    </linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaf3fa"/><stop offset="1" stop-color="#cfe0ee"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#w)"/>
+  <rect y="410" width="800" height="190" fill="#bf9a70"/>
+  <rect y="410" width="800" height="190" fill="url(#f)" opacity="0.35"/>
+  <rect y="400" width="800" height="12" fill="#ffffff" opacity="0.85"/>
+  <g stroke="#00000018" stroke-width="2">
+    <path d="M0 470 L800 470"/><path d="M0 530 L800 530"/>
+  </g>
+  <rect x="520" y="90" width="230" height="230" fill="#ffffff"/>
+  <rect x="532" y="102" width="206" height="206" fill="url(#g)"/>
+  <path d="M635.0 102 L635.0 308" stroke="#ffffff" stroke-width="8"/>
+  <rect x="506" y="320" width="258" height="14" fill="#ffffff"/>
+  <ellipse cx="250" cy="330" rx="170" ry="40" fill="#3f5158"/>
+  <g stroke="#3f5158" stroke-width="14" stroke-linecap="round">
+    <path d="M150 350 L130 440"/><path d="M350 350 L370 440"/>
+  </g>
+  <g fill="#6b7f86">
+    <rect x="90" y="290" width="60" height="70" rx="10"/>
+    <rect x="350" y="290" width="60" height="70" rx="10"/>
+  </g>
+  <circle cx="250" cy="318" r="22" fill="#ffffff" opacity="0.7"/>
+  <ellipse cx="250" cy="455" rx="190" ry="22" fill="#000" opacity="0.1"/>
+  <path d="M670 410 L730 410 L722 340 L678 340 Z" fill="#3f5158"/>
+  <g fill="#6b7f86">
+    <path d="M700 340 q-50 -50 -66 -120 q46 24 66 92 z"/>
+    <path d="M700 340 q48 -60 54 -134 q-46 30 -54 106 z"/>
+  </g>
+  <rect width="800" height="600" fill="#0b1220" opacity="0.04"/>
+</svg>
