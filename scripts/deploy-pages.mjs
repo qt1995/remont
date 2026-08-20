@@ -10,11 +10,13 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const REMOTE = process.env.PAGES_REMOTE ?? 'https://github.com/qt1995/penis.github.io.git'
 const BRANCH = process.env.PAGES_BRANCH ?? 'gh-pages'
 
-const root = resolve(import.meta.dirname, '..')
+// import.meta.dirname появился в Node 20.11 — берём путь через URL, чтобы работало и на 20.10
+const root = fileURLToPath(new URL('..', import.meta.url))
 const dist = resolve(root, 'dist')
 
 if (!existsSync(resolve(dist, 'index.html'))) {
