@@ -3,11 +3,12 @@ import { ArrowRight, Box, CalendarDays, Ruler, Wallet } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
 import { Segmented } from '@/components/ui/Segmented'
 import { Button } from '@/components/ui/Button'
-import { workFilters, works } from '@/data/portfolio'
+import { workFilters } from '@/data/portfolio'
+import { useContent, mediaUrl } from '@/lib/content'
+import { track } from '@/lib/analytics'
 import { formatDays, formatMoney } from '@/lib/format'
 import { useRegion } from '@/lib/region'
 import { useLeadModal } from '@/lib/leadModal'
-import { asset } from '@/lib/asset'
 
 type FilterId = (typeof workFilters)[number]['id']
 
@@ -15,6 +16,7 @@ export function Portfolio() {
   const [filter, setFilter] = useState<FilterId>('all')
   const { region } = useRegion()
   const { openLead } = useLeadModal()
+  const { works } = useContent()
 
   const list = filter === 'all' ? works : works.filter((w) => w.type === filter)
 
@@ -42,7 +44,7 @@ export function Portfolio() {
           >
             <div className="relative aspect-[4/3] overflow-hidden bg-muted">
               <img
-                src={asset(w.image)}
+                src={mediaUrl(w.image)}
                 alt={w.title + ' — ' + w.style}
                 width={800}
                 height={600}
@@ -105,14 +107,15 @@ export function Portfolio() {
 
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  track('work_click', { work: w.title })
                   openLead({
                     source: 'work:' + w.id,
                     title: 'Хочу так же: ' + w.title,
                     lead: 'Покажем полный фотоотчёт по объекту и посчитаем аналогичный ремонт под вашу площадь.',
                     payload: { work: w.title, area: w.area },
                   })
-                }
+                }}
                 className="mt-5 inline-flex min-h-11 cursor-pointer items-center gap-2 self-start font-display text-[15px] font-medium text-gold transition-colors hover:text-gold-600"
               >
                 Хочу такой же

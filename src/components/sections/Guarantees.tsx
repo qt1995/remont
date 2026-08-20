@@ -1,13 +1,14 @@
 import { BadgePercent, Banknote, FileSignature, ShieldCheck, Timer } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
-import { guarantees, promos } from '@/data/content'
+import { useContent } from '@/lib/content'
 import { useLeadModal } from '@/lib/leadModal'
 
 const icons = [FileSignature, Timer, ShieldCheck, Banknote]
 
 export function Guarantees() {
   const { openLead } = useLeadModal()
+  const { guarantees, promos } = useContent()
 
   return (
     <Section

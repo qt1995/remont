@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Menu, Phone, X } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/ui/Button'
-import { regionList, site } from '@/config/site'
+import { useContent } from '@/lib/content'
+import { track } from '@/lib/analytics'
 import { useRegion } from '@/lib/region'
 import { useLeadModal } from '@/lib/leadModal'
 import { useLockBody } from '@/lib/useLockBody'
@@ -30,8 +31,10 @@ const navMobile = [
 export function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const { regionId, setRegion } = useRegion()
+  const { regionId, regions, setRegion } = useRegion()
   const { openLead } = useLeadModal()
+  const { settings } = useContent()
+  const phoneHref = 'tel:' + settings.phone.replace(/[^\d+]/g, '')
   useLockBody(menuOpen)
 
   useEffect(() => {
@@ -54,12 +57,12 @@ export function Header() {
         <a
           href="#top"
           className="flex shrink-0 items-center gap-2.5"
-          aria-label={site.brand + ' — на главную'}
+          aria-label={settings.brand + ' — на главную'}
         >
           <Logo className="size-9 shrink-0 text-navy md:size-10" />
           <span className="leading-tight">
             <span className="block font-display text-base font-bold tracking-tight whitespace-nowrap md:text-lg">
-              {site.brand}
+              {settings.brand}
             </span>
             <span className="hidden text-[11px] whitespace-nowrap text-subtle sm:block md:text-xs">
               ремонт квартир под ключ
@@ -88,7 +91,7 @@ export function Header() {
             aria-label="Город"
             className="hidden shrink-0 rounded-lg border border-line p-0.5 md:flex"
           >
-            {regionList.map((r) => (
+            {regions.map((r) => (
               <button
                 key={r.id}
                 type="button"
@@ -106,9 +109,10 @@ export function Header() {
 
           <span className="2xl:hidden">
             <ButtonLink
-              href={site.phoneHref}
+              href={phoneHref}
               variant="ghost"
-              aria-label={'Позвонить: ' + site.phone}
+              aria-label={'Позвонить: ' + settings.phone}
+              onClick={() => track('call_click', { place: 'header' })}
               className="px-2.5"
             >
               <Phone aria-hidden className="size-5" />
@@ -116,9 +120,9 @@ export function Header() {
           </span>
 
           <span className="hidden 2xl:block">
-            <ButtonLink href={site.phoneHref} variant="ghost" className="tnum px-3 whitespace-nowrap">
+            <ButtonLink href={phoneHref} variant="ghost" className="tnum px-3 whitespace-nowrap">
               <Phone aria-hidden className="size-4" />
-              {site.phone}
+              {settings.phone}
             </ButtonLink>
           </span>
 
@@ -149,7 +153,7 @@ export function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-6 flex items-center justify-between">
-              <span className="font-display text-lg font-bold">{site.brand}</span>
+              <span className="font-display text-lg font-bold">{settings.brand}</span>
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
@@ -161,7 +165,7 @@ export function Header() {
             </div>
 
             <div className="mb-6 flex rounded-xl border border-line p-1 md:hidden">
-              {regionList.map((r) => (
+              {regions.map((r) => (
                 <button
                   key={r.id}
                   type="button"
@@ -194,9 +198,9 @@ export function Header() {
             </nav>
 
             <div className="mt-6 flex flex-col gap-3">
-              <ButtonLink href={site.phoneHref} variant="outline" size="lg" className="tnum w-full">
+              <ButtonLink href={phoneHref} variant="outline" size="lg" className="tnum w-full">
                 <Phone aria-hidden className="size-4" />
-                {site.phone}
+                {settings.phone}
               </ButtonLink>
               <Button
                 size="lg"

@@ -2,13 +2,14 @@ import { MessageCircleQuestion } from 'lucide-react'
 import { Eyebrow } from '@/components/ui/Section'
 import { AccordionItem } from '@/components/ui/Accordion'
 import { Button } from '@/components/ui/Button'
-import { faq } from '@/data/content'
+import { useContent } from '@/lib/content'
 import { useReveal } from '@/lib/useReveal'
 import { useLeadModal } from '@/lib/leadModal'
 
 export function Faq() {
   const { ref, visible } = useReveal<HTMLElement>()
   const { openLead } = useLeadModal()
+  const { faq } = useContent()
 
   return (
     <section

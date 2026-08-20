@@ -1,10 +1,11 @@
-import { tariffs, type PropertyType, type Tariff } from '@/data/tariffs'
+import type { SiteContent } from '@/lib/content'
 
+export type Tariff = SiteContent['tariffs'][number]
+export type PropertyType = Tariff['property']
 export type MaterialsMode = 'own' | 'ours'
 export type ExtraId = 'design' | 'furniture' | 'warmFloor' | 'smartLight'
 
 export type CalcInput = {
-  property: PropertyType
   tariffId: string
   area: number
   rooms: number
@@ -12,6 +13,7 @@ export type CalcInput = {
   materials: MaterialsMode
   extras: ExtraId[]
   regionK: number
+  furnishingPerM2: number
 }
 
 export type CalcResult = {
@@ -27,17 +29,6 @@ export type CalcResult = {
   days: number
 }
 
-/** Ориентировочная стоимость материалов на м² под каждый уровень отделки. */
-const MATERIALS_PER_M2: Record<string, number> = {
-  'new-rough': 3500,
-  'new-prefinish': 5200,
-  'new-turnkey': 9500,
-  'new-turnkey-materials': 0,
-  'old-cosmetic': 3200,
-  'old-capital': 7800,
-  'old-euro': 11000,
-}
-
 export const EXTRAS: { id: ExtraId; label: string; hint: string; perM2?: number; fixed?: number }[] = [
   {
     id: 'design',
@@ -49,7 +40,6 @@ export const EXTRAS: { id: ExtraId; label: string; hint: string; perM2?: number;
     id: 'furniture',
     label: 'Мебель и комплектация',
     hint: 'Подбор, закупка, доставка и сборка «под ключ»',
-    perM2: 10000,
   },
   {
     id: 'warmFloor',
@@ -65,11 +55,11 @@ export const EXTRAS: { id: ExtraId; label: string; hint: string; perM2?: number;
   },
 ]
 
-export function tariffsFor(property: PropertyType) {
+export function tariffsFor(tariffs: Tariff[], property: PropertyType) {
   return tariffs.filter((t) => t.property === property)
 }
 
-export function calculate(input: CalcInput): CalcResult | null {
+export function calculate(tariffs: Tariff[], input: CalcInput): CalcResult | null {
   const tariff = tariffs.find((t) => t.id === input.tariffId)
   if (!tariff) return null
 
@@ -80,13 +70,14 @@ export function calculate(input: CalcInput): CalcResult | null {
 
   const works = tariff.pricePerM2 * area * complexity * regionK
 
-  const materialsRate = MATERIALS_PER_M2[tariff.id] ?? 0
   const materials =
-    tariff.withMaterials || input.materials === 'own' ? 0 : materialsRate * area * regionK
+    tariff.withMaterials || input.materials === 'own' ? 0 : tariff.materialsPerM2 * area * regionK
 
   const extras = input.extras.map((id) => {
     const def = EXTRAS.find((e) => e.id === id)!
-    const sum = def.perM2 ? def.perM2 * area * regionK : (def.fixed ?? 0) * bathrooms * regionK
+    // Цена комплектации задаётся в админке вместе с самой опцией
+    const perM2 = id === 'furniture' ? input.furnishingPerM2 : (def.perM2 ?? 0)
+    const sum = perM2 ? perM2 * area * regionK : (def.fixed ?? 0) * bathrooms * regionK
     return { id, label: def.label, sum }
   })
   const extrasTotal = extras.reduce((acc, e) => acc + e.sum, 0)

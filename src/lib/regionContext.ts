@@ -1,7 +1,13 @@
 import { createContext, useCallback, useContext } from 'react'
-import type { Region, RegionId } from '@/config/site'
 
-export type RegionCtx = { region: Region; regionId: RegionId; setRegion: (id: RegionId) => void }
+export type Region = { id: string; name: string; nameIn: string; k: number }
+
+export type RegionCtx = {
+  region: Region
+  regionId: string
+  regions: Region[]
+  setRegion: (id: string) => void
+}
 
 /** Контекст отдельно от провайдера — чтобы Fast Refresh не ломал хуки. */
 export const RegionContext = createContext<RegionCtx | null>(null)

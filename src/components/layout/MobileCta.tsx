@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Phone } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/ui/Button'
-import { site } from '@/config/site'
+import { useContent } from '@/lib/content'
+import { track } from '@/lib/analytics'
 import { useLeadModal } from '@/lib/leadModal'
 
 /** Панель с обратной связью на мобильных — появляется, когда герой уже прокручен. */
 export function MobileCta() {
   const [shown, setShown] = useState(false)
   const { openLead } = useLeadModal()
+  const { settings } = useContent()
+  const phoneHref = 'tel:' + settings.phone.replace(/[^\d+]/g, '')
 
   useEffect(() => {
     const onScroll = () => setShown(window.scrollY > 600)
@@ -27,11 +30,12 @@ export function MobileCta() {
     >
       <div className="flex gap-2 p-3">
         <ButtonLink
-          href={site.phoneHref}
+          href={phoneHref}
           variant="outline"
           size="lg"
           className="shrink-0 px-4"
-          aria-label={'Позвонить: ' + site.phone}
+          aria-label={'Позвонить: ' + settings.phone}
+          onClick={() => track('call_click', { place: 'mobile-bar' })}
           tabIndex={shown ? undefined : -1}
         >
           <Phone aria-hidden className="size-5" />

@@ -2,7 +2,7 @@ import { useId, useRef, useState } from 'react'
 import { CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { formatPhone, isPhoneValid, submitLead } from '@/lib/lead'
-import { site } from '@/config/site'
+import { useContent } from '@/lib/content'
 
 type Props = {
   source: string
@@ -19,6 +19,7 @@ export function LeadForm({
   compact = false,
   onDone,
 }: Props) {
+  const { settings } = useContent()
   const uid = useId()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -70,7 +71,7 @@ export function LeadForm({
         <p className="font-display text-lg font-medium">Заявка принята</p>
         <p className="mt-2 text-[15px] text-subtle">
           Перезвоним в течение рабочего дня. Если удобнее в мессенджере — напишите нам в{' '}
-          <a href={site.telegram} className="text-gold underline underline-offset-2">
+          <a href={settings.telegram} className="text-gold underline underline-offset-2">
             Telegram
           </a>
           .
@@ -158,8 +159,8 @@ export function LeadForm({
       {serverError && (
         <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
           {serverError} Телефон для связи:{' '}
-          <a href={site.phoneHref} className="font-medium underline">
-            {site.phone}
+          <a href={'tel:' + settings.phone.replace(/[^\d+]/g, '')} className="font-medium underline">
+            {settings.phone}
           </a>
         </p>
       )}

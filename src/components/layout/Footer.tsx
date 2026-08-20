@@ -1,6 +1,6 @@
 import { Mail, Phone } from 'lucide-react'
 import { Logo } from '@/components/layout/Logo'
-import { site } from '@/config/site'
+import { useContent } from '@/lib/content'
 import { useRegion } from '@/lib/region'
 
 const columns = [
@@ -36,7 +36,9 @@ const columns = [
 
 export function Footer() {
   const { region } = useRegion()
+  const { settings } = useContent()
   const year = new Date().getFullYear()
+  const phoneHref = 'tel:' + settings.phone.replace(/[^\d+]/g, '')
 
   return (
     <footer className="relative overflow-hidden bg-navy text-white/70">
@@ -46,24 +48,24 @@ export function Footer() {
         <div>
           <div className="flex items-center gap-2.5 text-white">
             <Logo className="size-10 text-white/12" />
-            <span className="font-display text-lg font-bold">{site.brand}</span>
+            <span className="font-display text-lg font-bold">{settings.brand}</span>
           </div>
           <p className="mt-4 max-w-xs text-[15px] leading-relaxed">
             Ремонт квартир под ключ в {region.nameIn}. Фиксированная смета, прозрачный прайс,
             гарантия 5 лет.
           </p>
           <div className="mt-5 flex flex-col gap-2">
-            <a href={site.phoneHref}
+            <a href={phoneHref}
               className="tnum inline-flex min-h-11 items-center gap-2 text-white hover:text-gold-300">
               <Phone aria-hidden className="size-4" />
-              {site.phone}
+              {settings.phone}
             </a>
             <a
-              href={'mailto:' + site.email}
+              href={'mailto:' + settings.email}
               className="inline-flex min-h-11 items-center gap-2 text-white hover:text-gold-300"
             >
               <Mail aria-hidden className="size-4" />
-              {site.email}
+              {settings.email}
             </a>
           </div>
         </div>
@@ -90,7 +92,7 @@ export function Footer() {
       <div className="relative border-t border-white/10">
         <div className="container-page flex flex-col gap-3 py-6 text-[13px] sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {year} {site.brand}. {site.legal}, ИНН {site.inn}
+            © {year} {settings.brand}. {settings.legal}, ИНН {settings.inn}
           </p>
           <p id="privacy" className="max-w-xl sm:text-right">
             Цены на сайте не являются публичной офертой. Политика обработки персональных данных —

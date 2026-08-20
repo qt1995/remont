@@ -4,8 +4,7 @@ import { CountUp } from '@/components/ui/CountUp'
 import { useLeadModal } from '@/lib/leadModal'
 import { useRegion } from '@/lib/region'
 import { formatMoney } from '@/lib/format'
-import { stats } from '@/config/site'
-import { asset } from '@/lib/asset'
+import { useContent, mediaUrl } from '@/lib/content'
 
 const advantages = [
   {
@@ -21,9 +20,15 @@ const advantages = [
 export function Hero() {
   const { openLead } = useLeadModal()
   const { region } = useRegion()
+  const { stats, tariffs, stageShots } = useContent()
 
-  const roughPerM2 = 4900 * region.k
-  const turnkeyPerM2 = 9900 * region.k
+  // Цены в шапке всегда берём из тарифов, а не из отдельных чисел
+  const rough = tariffs.find((t) => t.property === 'new' && !t.withMaterials)
+  const turnkey = tariffs.find((t) => t.id.includes('turnkey') && !t.withMaterials) ?? rough
+  const heroShot = stageShots[stageShots.length - 1]?.image ?? '/stages/3-furnished.svg'
+
+  const roughPerM2 = (rough?.pricePerM2 ?? 4900) * region.k
+  const turnkeyPerM2 = (turnkey?.pricePerM2 ?? 9900) * region.k
 
   return (
     <section id="top" className="relative overflow-hidden bg-navy text-white">
@@ -119,7 +124,7 @@ export function Hero() {
           <div className="relative lg:pl-4">
             <div className="relative overflow-hidden rounded-[24px] border border-white/12 shadow-lift">
               <img
-                src={asset('stages/3-furnished.svg')}
+                src={mediaUrl(heroShot)}
                 alt="Гостиная после ремонта под ключ с мебелью и текстилем"
                 width={1600}
                 height={1000}

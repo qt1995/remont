@@ -1,10 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Gauge, Minus, Plus, Timer } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
 import { Segmented } from '@/components/ui/Segmented'
 import { Button } from '@/components/ui/Button'
-import { calculate, EXTRAS, tariffsFor, type ExtraId, type MaterialsMode } from '@/lib/calc'
-import type { PropertyType } from '@/data/tariffs'
+import {
+  calculate,
+  EXTRAS,
+  tariffsFor,
+  type ExtraId,
+  type MaterialsMode,
+  type PropertyType,
+} from '@/lib/calc'
+import { useContent } from '@/lib/content'
+import { track } from '@/lib/analytics'
 import { formatDays, formatMoney, roundTo } from '@/lib/format'
 import { useRegion } from '@/lib/region'
 import { useLeadModal } from '@/lib/leadModal'
@@ -79,6 +87,7 @@ function Stepper({
 export function CalculatorSection() {
   const { region } = useRegion()
   const { openLead } = useLeadModal()
+  const { tariffs, furnishingAddon } = useContent()
 
   const [property, setProperty] = useState<PropertyType>('new')
   const [tariffId, setTariffId] = useState('new-turnkey')
@@ -88,18 +97,41 @@ export function CalculatorSection() {
   const [materials, setMaterials] = useState<MaterialsMode>('ours')
   const [extras, setExtras] = useState<ExtraId[]>(['design'])
 
-  const list = tariffsFor(property)
+  const list = tariffsFor(tariffs, property)
+
+  // Тарифы приходят из админки: если выбранный убрали, переключаемся на первый доступный
+  useEffect(() => {
+    if (list.length && !list.some((t) => t.id === tariffId)) setTariffId(list[0].id)
+  }, [list, tariffId])
 
   const onProperty = (p: PropertyType) => {
     setProperty(p)
-    setTariffId(tariffsFor(p)[0].id)
+    const next = tariffsFor(tariffs, p)[0]
+    if (next) setTariffId(next.id)
   }
 
   const result = useMemo(
     () =>
-      calculate({ property, tariffId, area, rooms, bathrooms, materials, extras, regionK: region.k }),
-    [property, tariffId, area, rooms, bathrooms, materials, extras, region.k],
+      calculate(tariffs, {
+        tariffId,
+        area,
+        rooms,
+        bathrooms,
+        materials,
+        extras,
+        regionK: region.k,
+        furnishingPerM2: furnishingAddon.pricePerM2,
+      }),
+    [tariffs, tariffId, area, rooms, bathrooms, materials, extras, region.k, furnishingAddon.pricePerM2],
   )
+
+  // Одно событие на визит: интересно, доходят ли вообще до калькулятора
+  const tracked = useRef(false)
+  useEffect(() => {
+    if (tracked.current || !result) return
+    tracked.current = true
+    track('calc_use', { tariff: result.tariff.name, area })
+  }, [result, area])
 
   const toggleExtra = (id: ExtraId) =>
     setExtras((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))

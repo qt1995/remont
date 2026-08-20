@@ -1,8 +1,10 @@
 import { ShieldCheck, TriangleAlert } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
-import { pains } from '@/data/content'
+import { useContent } from '@/lib/content'
 
 export function Pains() {
+  const { pains } = useContent()
+
   return (
     <Section
       id="pains"

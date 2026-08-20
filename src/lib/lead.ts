@@ -1,4 +1,6 @@
 import { site } from '@/config/site'
+import { API_URL } from '@/lib/content'
+import { captureUtm, track } from '@/lib/analytics'
 
 export type Lead = {
   name: string
@@ -14,32 +16,46 @@ export type LeadResult = { ok: true } | { ok: false; error: string }
 const LOCAL_KEY = 'remont:leads'
 
 /**
- * Отправка заявки. Пока бэкенда нет — заявка складывается в localStorage,
- * чтобы форму можно было проверить целиком. Подключение боевого приёмника:
- * положить URL в .env как VITE_LEAD_ENDPOINT.
+ * Отправка заявки. Основной путь — API админки: заявка попадает в базу и
+ * дублируется в Telegram. Если сервер не настроен, форму всё равно можно
+ * проверить целиком: заявка складывается в localStorage.
  */
 export async function submitLead(lead: Lead): Promise<LeadResult> {
-  const record = { ...lead, createdAt: new Date().toISOString() }
+  const record = {
+    ...lead,
+    utm: captureUtm(),
+    page: typeof location === 'undefined' ? '' : location.pathname + location.search,
+    createdAt: new Date().toISOString(),
+  }
 
-  if (!site.leadEndpoint) {
+  const endpoint = API_URL ? API_URL + '/api/leads' : site.leadEndpoint
+
+  if (!endpoint) {
     try {
       const prev = JSON.parse(localStorage.getItem(LOCAL_KEY) ?? '[]')
       localStorage.setItem(LOCAL_KEY, JSON.stringify([...prev, record]))
     } catch {
       /* приватный режим — не критично */
     }
-    console.info('[lead] endpoint не задан, заявка сохранена локально', record)
+    console.info('[lead] сервер не настроен, заявка сохранена локально', record)
     await new Promise((r) => setTimeout(r, 600))
+    track('lead', { source: lead.source })
     return { ok: true }
   }
 
   try {
-    const res = await fetch(site.leadEndpoint, {
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(record),
     })
-    if (!res.ok) return { ok: false, error: `Сервер ответил ${res.status}` }
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => null)
+      return { ok: false, error: data?.error ?? 'Сервер ответил ' + res.status }
+    }
+
+    track('lead', { source: lead.source })
     return { ok: true }
   } catch {
     return { ok: false, error: 'Не удалось отправить заявку. Проверьте связь или позвоните нам.' }

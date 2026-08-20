@@ -1,11 +1,14 @@
 import { Clock, Mail, MapPin, MessageCircle, Phone, Send } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
 import { LeadForm } from '@/components/forms/LeadForm'
-import { site } from '@/config/site'
+import { useContent } from '@/lib/content'
+import { track } from '@/lib/analytics'
 import { useRegion } from '@/lib/region'
 
 export function Contacts() {
   const { region } = useRegion()
+  const { settings } = useContent()
+  const phoneHref = 'tel:' + settings.phone.replace(/[^\d+]/g, '')
 
   return (
     <Section
@@ -22,10 +25,11 @@ export function Contacts() {
               <Phone aria-hidden className="mb-3 size-5 text-gold" />
               <p className="text-[13px] tracking-wide text-subtle uppercase">Телефон</p>
               <a
-                href={site.phoneHref}
+                href={phoneHref}
+                onClick={() => track('call_click', { place: 'contacts' })}
                 className="tnum mt-1 inline-flex min-h-11 items-center font-display text-xl font-semibold hover:text-gold"
               >
-                {site.phone}
+                {settings.phone}
               </a>
             </li>
 
@@ -33,27 +37,27 @@ export function Contacts() {
               <Mail aria-hidden className="mb-3 size-5 text-gold" />
               <p className="text-[13px] tracking-wide text-subtle uppercase">Почта</p>
               <a
-                href={'mailto:' + site.email}
+                href={'mailto:' + settings.email}
                 className="mt-1 inline-flex min-h-11 items-center font-display text-xl font-semibold break-all hover:text-gold"
               >
-                {site.email}
+                {settings.email}
               </a>
             </li>
 
             <li className="rounded-2xl border border-line bg-white p-5">
               <Clock aria-hidden className="mb-3 size-5 text-gold" />
               <p className="text-[13px] tracking-wide text-subtle uppercase">Когда работаем</p>
-              <p className="mt-1 font-display text-[17px] font-medium">Пн–Сб, 9:00–20:00</p>
+              <p className="mt-1 font-display text-[17px] font-medium">{settings.workHours}</p>
               <p className="mt-0.5 text-sm text-subtle">Заявки с сайта принимаем круглосуточно</p>
             </li>
 
             <li className="rounded-2xl border border-line bg-white p-5">
               <MapPin aria-hidden className="mb-3 size-5 text-gold" />
               <p className="text-[13px] tracking-wide text-subtle uppercase">Где встречаемся</p>
-              {site.office ? (
+              {settings.office ? (
                 <>
-                  <p className="mt-1 font-display text-[17px] font-medium">{site.office.address}</p>
-                  <p className="mt-0.5 text-sm text-subtle">{site.office.hours}</p>
+                  <p className="mt-1 font-display text-[17px] font-medium">{settings.office.address}</p>
+                  <p className="mt-0.5 text-sm text-subtle">{settings.office.hours}</p>
                 </>
               ) : (
                 <>
@@ -70,14 +74,16 @@ export function Contacts() {
 
           <div className="mt-5 flex flex-wrap gap-3">
             <a
-              href={site.telegram}
+              href={settings.telegram}
+              onClick={() => track('messenger_click', { place: 'telegram' })}
               className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 font-display font-medium transition-colors hover:border-navy hover:bg-sand"
             >
               <Send aria-hidden className="size-4 text-gold" />
               Telegram
             </a>
             <a
-              href={site.whatsapp}
+              href={settings.whatsapp}
+              onClick={() => track('messenger_click', { place: 'whatsapp' })}
               className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-line bg-white px-5 font-display font-medium transition-colors hover:border-navy hover:bg-sand"
             >
               <MessageCircle aria-hidden className="size-4 text-gold" />
@@ -86,7 +92,7 @@ export function Contacts() {
           </div>
 
           <p className="mt-6 max-w-xl text-sm leading-relaxed text-subtle">
-            Работаем по договору как {site.legal}, ИНН {site.inn}. Даём полный пакет закрывающих
+            Работаем по договору как {settings.legal}, ИНН {settings.inn}. Даём полный пакет закрывающих
             документов — подходит для ипотечных и субсидированных квартир.
           </p>
         </div>

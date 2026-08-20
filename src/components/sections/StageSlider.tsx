@@ -1,42 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { MoveHorizontal } from 'lucide-react'
 import { useReveal } from '@/lib/useReveal'
-import { asset } from '@/lib/asset'
-
-type Stage = {
-  src: string
-  name: string
-  caption: string
-  price: string
-}
-
-const STAGES: Stage[] = [
-  {
-    src: asset('stages/1-draft.svg'),
-    name: 'Черновая',
-    caption: 'Стены под штукатурку, стяжка, разводка электрики и сантехники.',
-    price: 'от 4 900 ₽/м²',
-  },
-  {
-    src: asset('stages/2-finish.svg'),
-    name: 'Чистовая',
-    caption: 'Финишная отделка, полы, двери, свет, сантехника. Можно заезжать.',
-    price: 'от 9 900 ₽/м²',
-  },
-  {
-    src: asset('stages/3-furnished.svg'),
-    name: 'С мебелью',
-    caption: 'Подбор, закупка и сборка мебели, света и текстиля под дизайн-проект.',
-    price: '+10 000 ₽/м²',
-  },
-]
+import { useContent, mediaUrl } from '@/lib/content'
+import { track } from '@/lib/analytics'
 
 const START = 0.25 // ползунок стоит на первой четверти — сразу видно, что картинок две
-const MAX_T = STAGES.length - 1
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
 
 export function StageSlider() {
+  const { stageShots } = useContent()
+  const STAGES = stageShots
+  const MAX_T = Math.max(1, STAGES.length - 1)
+
   const [t, setT] = useState(START)
   const [dragging, setDragging] = useState(false)
   const frameRef = useRef<HTMLDivElement>(null)
@@ -72,6 +48,7 @@ export function StageSlider() {
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
+      if (!touched.current) track('stage_slider')
       touched.current = true
       ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
       dragState.current = { startX: e.clientX, startT: t }
@@ -124,7 +101,7 @@ export function StageSlider() {
           className="relative aspect-[16/10] w-full cursor-ew-resize touch-pan-y overflow-hidden rounded-2xl bg-muted select-none"
         >
           <img
-            src={from.src}
+            src={mediaUrl(from.image)}
             alt={'Комната, этап: ' + from.name}
             width={1600}
             height={1000}
@@ -136,7 +113,7 @@ export function StageSlider() {
             style={{ clipPath: 'inset(0 ' + (100 - edge) + '% 0 0)' }}
           >
             <img
-              src={to.src}
+              src={mediaUrl(to.image)}
               alt={'Комната, этап: ' + to.name}
               width={1600}
               height={1000}

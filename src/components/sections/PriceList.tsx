@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { ChevronDown, Search } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
-import { priceGroups } from '@/data/priceList'
+import { useContent } from '@/lib/content'
+import { track } from '@/lib/analytics'
 import { formatMoney } from '@/lib/format'
 import { useRegion } from '@/lib/region'
 import { useLeadModal } from '@/lib/leadModal'
@@ -10,8 +11,9 @@ import { useLeadModal } from '@/lib/leadModal'
 export function PriceList() {
   const { region } = useRegion()
   const { openLead } = useLeadModal()
+  const { priceGroups } = useContent()
   const [query, setQuery] = useState('')
-  const [openId, setOpenId] = useState<string | null>(priceGroups[0].id)
+  const [openId, setOpenId] = useState<string | null>(null)
 
   const q = query.trim().toLowerCase()
 
@@ -26,9 +28,12 @@ export function PriceList() {
     return priceGroups
       .map((g) => ({ ...g, items: g.items.filter((i) => match(i.name)) }))
       .filter((g) => g.items.length > 0)
-  }, [q])
+  }, [q, priceGroups])
 
   const total = priceGroups.reduce((acc, g) => acc + g.items.length, 0)
+
+  // Первая группа открыта по умолчанию, но список приходит из админки
+  const openGroup = openId ?? priceGroups[0]?.id ?? null
 
   return (
     <Section
@@ -54,6 +59,7 @@ export function PriceList() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onBlur={(e) => e.target.value.trim() && track('price_search', { q: e.target.value.trim() })}
             placeholder="Стяжка, плитка, розетка…"
             className="h-12 w-full rounded-xl border border-line bg-white pr-4 pl-12 text-base outline-none transition-colors focus:border-navy"
           />
@@ -83,7 +89,7 @@ export function PriceList() {
       ) : (
         <div className="overflow-hidden rounded-2xl border border-line">
           {groups.map((g) => {
-            const open = q ? true : openId === g.id
+            const open = q ? true : openGroup === g.id
             return (
               <div key={g.id} className="border-b border-line last:border-b-0">
                 <h3>

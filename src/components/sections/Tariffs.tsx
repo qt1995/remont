@@ -3,7 +3,8 @@ import { Check, Minus, Sofa } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
 import { Segmented } from '@/components/ui/Segmented'
 import { Button } from '@/components/ui/Button'
-import { furnishingAddon, tariffs, type PropertyType } from '@/data/tariffs'
+import { type PropertyType } from '@/lib/calc'
+import { useContent } from '@/lib/content'
 import { formatDays, formatMoney, roundTo } from '@/lib/format'
 import { useRegion } from '@/lib/region'
 import { useLeadModal } from '@/lib/leadModal'
@@ -13,13 +14,14 @@ const options = [
   { id: 'old' as PropertyType, label: 'Вторичка', sub: 'с демонтажом и заменой труб' },
 ]
 
-const SAMPLE_AREA = 50
 
 export function Tariffs() {
   const [property, setProperty] = useState<PropertyType>('new')
   const { region } = useRegion()
   const { openLead } = useLeadModal()
+  const { tariffs, furnishingAddon, settings } = useContent()
 
+  const sampleArea = settings.sampleArea || 50
   const list = tariffs.filter((t) => t.property === property)
 
   return (
@@ -46,12 +48,12 @@ export function Tariffs() {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {list.map((t) => {
           const perM2 = t.pricePerM2 * region.k
-          const sample = roundTo(perM2 * SAMPLE_AREA, 5000)
+          const sample = roundTo(perM2 * sampleArea, 5000)
           const hot = !!t.popular
 
           const meta = [
             { label: 'Срок работ', value: t.termFrom + '–' + t.termTo + ' дн.' },
-            { label: 'Пример, ' + SAMPLE_AREA + ' м²', value: '~' + formatMoney(sample) },
+            { label: 'Пример, ' + sampleArea + ' м²', value: '~' + formatMoney(sample) },
           ]
 
           return (

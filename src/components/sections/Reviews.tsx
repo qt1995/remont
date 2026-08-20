@@ -1,11 +1,6 @@
 import { Play, Quote, Star } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
-import { textReviews, videoReviews } from '@/data/content'
-import { asset } from '@/lib/asset'
-
-const posters = ['portfolio/work-1.svg', 'portfolio/work-4.svg', 'portfolio/work-5.svg'].map(
-  asset,
-)
+import { useContent, mediaUrl } from '@/lib/content'
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -22,6 +17,8 @@ function Stars({ rating }: { rating: number }) {
 }
 
 export function Reviews() {
+  const { videoReviews, textReviews } = useContent()
+
   return (
     <Section
       id="reviews"
@@ -31,7 +28,7 @@ export function Reviews() {
       lead="Видео снимаем на объекте в день приёмки — без монтажа и заранее написанного текста."
     >
       <ul className="grid gap-5 md:grid-cols-3">
-        {videoReviews.map((v, i) => (
+        {videoReviews.map((v) => (
           <li key={v.id}>
             <button
               type="button"
@@ -39,7 +36,7 @@ export function Reviews() {
               aria-label={'Смотреть видеоотзыв: ' + v.name + ', ' + v.object}
             >
               <img
-                src={posters[i % posters.length]}
+                src={mediaUrl(v.poster)}
                 alt=""
                 width={800}
                 height={600}

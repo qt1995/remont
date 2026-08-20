@@ -2,13 +2,17 @@ import { useCallback, useMemo, useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { LeadForm } from '@/components/forms/LeadForm'
 import { LeadModalContext, type LeadModalArgs } from '@/lib/leadModalContext'
+import { track } from '@/lib/analytics'
 
 export { useLeadModal } from '@/lib/leadModalContext'
 
 export function LeadModalProvider({ children }: { children: React.ReactNode }) {
   const [args, setArgs] = useState<LeadModalArgs | null>(null)
 
-  const openLead = useCallback((a: LeadModalArgs) => setArgs(a), [])
+  const openLead = useCallback((a: LeadModalArgs) => {
+    track('lead_open', { source: a.source })
+    setArgs(a)
+  }, [])
   const value = useMemo(() => ({ openLead }), [openLead])
 
   return (

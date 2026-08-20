@@ -1,10 +1,11 @@
 import { Section } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
-import { stages } from '@/data/content'
+import { useContent } from '@/lib/content'
 import { useLeadModal } from '@/lib/leadModal'
 
 export function Process() {
   const { openLead } = useLeadModal()
+  const { processSteps } = useContent()
 
   return (
     <Section
@@ -19,7 +20,7 @@ export function Process() {
       }
     >
       <ol className="grid gap-x-8 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
-        {stages.map((s) => (
+        {processSteps.map((s) => (
           <li key={s.n} className="group relative pt-10">
             <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-line" />
             <span
