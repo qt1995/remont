@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="Кухня-гостиная после капитального ремонта">
+  <defs>
+    <linearGradient id="w" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f1ea"/><stop offset="1" stop-color="#e8e4dd"/>
+    </linearGradient>
+    <linearGradient id="f" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b48a5f"/><stop offset="1" stop-color="#00000022"/>
+    </linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaf3fa"/><stop offset="1" stop-color="#cfe0ee"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#w)"/>
+  <rect y="410" width="800" height="190" fill="#b48a5f"/>
+  <rect y="410" width="800" height="190" fill="url(#f)" opacity="0.35"/>
+  <rect y="400" width="800" height="12" fill="#ffffff" opacity="0.85"/>
+  <g stroke="#00000018" stroke-width="2">
+    <path d="M0 470 L800 470"/><path d="M0 530 L800 530"/>
+  </g>
+  <rect x="520" y="90" width="230" height="220" fill="#ffffff"/>
+  <rect x="532" y="102" width="206" height="196" fill="url(#g)"/>
+  <path d="M635.0 102 L635.0 298" stroke="#ffffff" stroke-width="8"/>
+  <rect x="506" y="310" width="258" height="14" fill="#ffffff"/>
+  <rect x="60" y="300" width="360" height="110" fill="#4c5866"/>
+  <rect x="60" y="288" width="360" height="16" fill="#ffffff" opacity="0.85"/>
+  <g stroke="#00000030" stroke-width="3">
+    <path d="M150 304 L150 410"/><path d="M240 304 L240 410"/><path d="M330 304 L330 410"/>
+  </g>
+  <rect x="60" y="140" width="270" height="90" fill="#8e9aa8"/>
+  <circle cx="200" cy="284" r="10" fill="#ffffff" opacity="0.8"/>
+  <ellipse cx="240" cy="452" rx="200" ry="20" fill="#000" opacity="0.1"/>
+  <path d="M660 410 L720 410 L712 340 L668 340 Z" fill="#4c5866"/>
+  <g fill="#8e9aa8">
+    <path d="M690 340 q-50 -50 -66 -120 q46 24 66 92 z"/>
+    <path d="M690 340 q48 -60 54 -134 q-46 30 -54 106 z"/>
+  </g>
+  <rect width="800" height="600" fill="#0b1220" opacity="0.04"/>
+</svg>

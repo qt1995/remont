@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Rubik", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand — trust navy + premium gold */
+  --color-ink: #0b1220;
+  --color-navy: #0f172a;
+  --color-navy-800: #16233c;
+  --color-navy-700: #1e293b;
+  --color-blue: #1e3a8a;
+  --color-gold: #a16207;
+  --color-gold-600: #8a5309;
+  --color-gold-300: #e2b458;
+  --color-gold-100: #fdf3dd;
+  --color-sand: #f7f4ef;
+  --color-paper: #ffffff;
+  --color-muted: #e8ecf1;
+  --color-line: #e2e8f0;
+  --color-subtle: #5b6779;
+
+  --radius-card: 1rem;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.14);
+  --shadow-lift: 0 2px 4px rgb(15 23 42 / 0.06), 0 18px 40px -18px rgb(15 23 42 / 0.28);
+
+  --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  /* Anchors must clear the sticky header */
+  section[id] {
+    scroll-margin-top: 84px;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+@layer utilities {
+  /* Prices and figures must not jitter while values recalculate */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .container-page {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-page { padding-inline: 2rem; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@layer utilities {
+  /* Разметочная сетка — как на строительном чертеже. Очень слабая, работает фактурой. */
+  .bg-blueprint {
+    background-image:
+      linear-gradient(to right, rgb(15 23 42 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(15 23 42 / 0.045) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+
+  .bg-blueprint-dark {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+
+  /* Рулеточная шкала — разделитель, который читается как измерительный инструмент. */
+  .rule-ticks {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--color-line) 0 1px,
+      transparent 1px 16px
+    );
+  }
+
+  .rule-ticks-gold {
+    background-image: repeating-linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-gold) 45%, transparent) 0 1px,
+      transparent 1px 16px
+    );
+  }
+
+  /* Мягкое затухание фактуры к краям секции */
+  .mask-fade-y {
+    mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}

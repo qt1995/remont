@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" role="img" aria-label="Та же комната с мебелью: диван, ковёр, журнальный стол, шторы, растение">
+  <defs>
+    <linearGradient id="m-ceil" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f4f2"/>
+      <stop offset="1" stop-color="#e6e6e3"/>
+    </linearGradient>
+    <linearGradient id="m-back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0ebe3"/>
+      <stop offset="1" stop-color="#e2dcd2"/>
+    </linearGradient>
+    <linearGradient id="m-left" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ddd7cd"/>
+      <stop offset="1" stop-color="#efeae2"/>
+    </linearGradient>
+    <linearGradient id="m-right" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#e0dad0"/>
+      <stop offset="1" stop-color="#f2ede5"/>
+    </linearGradient>
+    <linearGradient id="m-floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c9a578"/>
+      <stop offset="1" stop-color="#ad8a5f"/>
+    </linearGradient>
+    <linearGradient id="m-glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaf3fa"/>
+      <stop offset="1" stop-color="#cfe0ee"/>
+    </linearGradient>
+    <linearGradient id="m-light" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="m-sofa" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7f8c7f"/>
+      <stop offset="1" stop-color="#66735f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- shell (identical geometry to the finished stage) -->
+  <polygon points="0,0 1600,0 1200,250 400,250" fill="url(#m-ceil)"/>
+  <polygon points="0,0 400,250 400,750 0,1000" fill="url(#m-left)"/>
+  <polygon points="1600,0 1200,250 1200,750 1600,1000" fill="url(#m-right)"/>
+  <rect x="400" y="250" width="800" height="500" fill="url(#m-back)"/>
+  <polygon points="0,1000 400,750 1200,750 1600,1000" fill="url(#m-floor)"/>
+
+  <g stroke="#946f47" stroke-width="3" opacity="0.55">
+    <path d="M400 750 L0 1000"/>
+    <path d="M500 750 L250 1000"/>
+    <path d="M600 750 L500 1000"/>
+    <path d="M700 750 L750 1000"/>
+    <path d="M800 750 L1000 1000"/>
+    <path d="M900 750 L1250 1000"/>
+    <path d="M1000 750 L1500 1000"/>
+    <path d="M1100 750 L1720 1000"/>
+  </g>
+  <g stroke="#8d693f" stroke-width="2" opacity="0.4">
+    <path d="M352 780 L1248 780"/>
+    <path d="M288 820 L1312 820"/>
+    <path d="M208 870 L1392 870"/>
+    <path d="M112 930 L1488 930"/>
+  </g>
+  <polygon points="0,1000 400,750 1200,750 1600,1000" fill="url(#m-light)"/>
+
+  <polygon points="400,750 1200,750 1200,772 400,772" fill="#f7f5f1"/>
+  <polygon points="400,750 400,772 0,1000 0,1042" fill="#efece6"/>
+  <polygon points="1200,750 1200,772 1600,1000 1600,1042" fill="#efece6"/>
+
+  <!-- window -->
+  <rect x="836" y="316" width="308" height="318" fill="#ffffff"/>
+  <rect x="850" y="330" width="280" height="290" fill="url(#m-glow)"/>
+  <g fill="none" stroke="#ffffff" stroke-width="10"><rect x="850" y="330" width="280" height="290"/></g>
+  <g fill="none" stroke="#f3f1ed" stroke-width="8"><path d="M990 330 L990 620"/></g>
+  <g opacity="0.35" fill="#7f96ab">
+    <rect x="864" y="520" width="46" height="96"/>
+    <rect x="922" y="480" width="34" height="136"/>
+    <rect x="1004" y="540" width="52" height="76"/>
+    <rect x="1070" y="500" width="40" height="116"/>
+  </g>
+  <polygon points="828,634 1152,634 1160,652 820,652" fill="#ffffff"/>
+  <polygon points="820,652 1160,652 1160,660 820,660" fill="#e4e0d8"/>
+
+  <!-- curtains -->
+  <rect x="806" y="290" width="12" height="16" fill="#cfc7b8"/>
+  <rect x="800" y="286" width="380" height="10" rx="5" fill="#b9b0a0"/>
+  <path d="M806 296 q22 120 6 240 q-14 110 4 214 l64 0 q-18 -110 -6 -220 q12 -122 -4 -234 z" fill="#e7e0d3"/>
+  <path d="M1114 296 q-22 120 -6 240 q14 110 -4 214 l64 0 q18 -110 6 -220 q-12 -122 4 -234 z" fill="#e7e0d3"/>
+  <g stroke="#d5cbba" stroke-width="3" fill="none">
+    <path d="M828 300 q14 220 2 448"/>
+    <path d="M852 300 q10 220 0 448"/>
+    <path d="M1140 300 q-10 220 0 448"/>
+    <path d="M1160 300 q-14 220 -2 448"/>
+  </g>
+
+  <!-- ceiling light -->
+  <ellipse cx="800" cy="150" rx="78" ry="20" fill="#fbfbf9"/>
+  <ellipse cx="800" cy="150" rx="60" ry="14" fill="#fff6dd"/>
+
+  <!-- door -->
+  <polygon points="82,952 82,386 258,412 258,846" fill="#f6f4f0"/>
+  <polygon points="106,938 106,404 244,424 244,838" fill="#ffffff"/>
+  <polygon points="130,918 130,428 222,444 222,824" fill="#f1efe9"/>
+  <circle cx="212" cy="640" r="9" fill="#c2a76a"/>
+
+  <!-- art above the sofa -->
+  <rect x="470" y="330" width="180" height="130" rx="4" fill="#f7f5f0" stroke="#cbc2b1" stroke-width="5"/>
+  <path d="M486 440 L540 372 L578 414 L616 366 L634 440 Z" fill="#b98f5c" opacity="0.7"/>
+  <circle cx="600" cy="366" r="14" fill="#c9a227" opacity="0.8"/>
+
+  <!-- rug -->
+  <polygon points="470,912 1150,912 1050,782 570,782" fill="#ded4c3"/>
+  <polygon points="512,894 1108,894 1022,798 598,798" fill="#d3c6b1"/>
+  <g stroke="#c2b39b" stroke-width="4" opacity="0.8">
+    <path d="M560 872 L1060 872"/>
+    <path d="M590 838 L1030 838"/>
+  </g>
+
+  <!-- sofa -->
+  <path d="M452 742 L820 742 L820 700 L452 700 Z" fill="#5d6a56"/>
+  <path d="M446 700 L826 700 L826 604 L446 604 Z" fill="url(#m-sofa)"/>
+  <path d="M446 604 L826 604 L826 578 L446 578 Z" fill="#8d9a89"/>
+  <path d="M446 742 L446 604 L406 616 L406 754 Z" fill="#6f7c69"/>
+  <path d="M826 742 L826 604 L866 616 L866 754 Z" fill="#6f7c69"/>
+  <g fill="#8d9a89">
+    <rect x="470" y="628" width="112" height="76" rx="12"/>
+    <rect x="596" y="628" width="112" height="76" rx="12"/>
+    <rect x="716" y="628" width="94" height="76" rx="12"/>
+  </g>
+  <g fill="#c9a227" opacity="0.85">
+    <rect x="486" y="612" width="72" height="66" rx="12" transform="rotate(-8 522 645)"/>
+    <rect x="722" y="612" width="72" height="66" rx="12" transform="rotate(7 758 645)"/>
+  </g>
+  <g stroke="#8a6a44" stroke-width="10" stroke-linecap="round">
+    <path d="M436 754 L426 786"/>
+    <path d="M840 754 L850 786"/>
+  </g>
+  <ellipse cx="640" cy="790" rx="230" ry="26" fill="#8a6a44" opacity="0.16"/>
+
+  <!-- coffee table -->
+  <ellipse cx="850" cy="836" rx="150" ry="46" fill="#a9784b"/>
+  <ellipse cx="850" cy="826" rx="150" ry="46" fill="#c08d59"/>
+  <g stroke="#8a6a44" stroke-width="11" stroke-linecap="round">
+    <path d="M760 852 L742 906"/>
+    <path d="M940 852 L958 906"/>
+    <path d="M850 866 L850 918"/>
+  </g>
+  <ellipse cx="850" cy="924" rx="140" ry="22" fill="#8a6a44" opacity="0.14"/>
+  <g>
+    <rect x="806" y="792" width="66" height="14" rx="4" fill="#e8e2d6"/>
+    <rect x="812" y="782" width="54" height="12" rx="4" fill="#c9a227"/>
+    <ellipse cx="906" cy="808" rx="20" ry="8" fill="#e8e2d6"/>
+    <path d="M898 808 q8 -26 16 0 z" fill="#7f8c7f"/>
+  </g>
+
+  <!-- media console on the right wall -->
+  <polygon points="1206,760 1330,700 1330,608 1206,660" fill="#b58a5c"/>
+  <polygon points="1206,660 1330,608 1330,596 1206,648" fill="#c9a077"/>
+  <polygon points="1206,760 1206,660 1198,664 1198,764" fill="#9a7549"/>
+  <rect x="1236" y="470" width="10" height="130" fill="#7d7a74"/>
+  <polygon points="1216,470 1400,404 1400,286 1216,352" fill="#2b3138"/>
+  <polygon points="1228,462 1390,404 1390,298 1228,356" fill="#3d454e"/>
+
+  <!-- plant -->
+  <path d="M1288 940 L1372 940 L1358 848 L1302 848 Z" fill="#c98f5f"/>
+  <path d="M1298 848 L1362 848 L1360 836 L1300 836 Z" fill="#e0a973"/>
+  <g fill="#5f7a52">
+    <path d="M1330 840 q-70 -70 -96 -170 q64 34 96 130 z"/>
+    <path d="M1330 840 q66 -84 74 -186 q-62 42 -74 146 z"/>
+    <path d="M1330 840 q-14 -110 22 -196 q30 82 8 172 z"/>
+  </g>
+  <ellipse cx="1330" cy="944" rx="70" ry="16" fill="#8a6a44" opacity="0.16"/>
+
+  <!-- floor lamp -->
+  <path d="M318 918 L330 640" stroke="#9a9288" stroke-width="9" stroke-linecap="round"/>
+  <ellipse cx="318" cy="922" rx="46" ry="12" fill="#9a9288"/>
+  <path d="M286 640 L376 640 L360 566 L302 566 Z" fill="#f0e9da"/>
+  <ellipse cx="331" cy="640" rx="45" ry="9" fill="#fff3d4"/>
+
+  <!-- warm light pools -->
+  <ellipse cx="800" cy="470" rx="260" ry="56" fill="#fff6dd" opacity="0.16"/>
+  <polygon points="700,760 1180,760 1320,940 640,940" fill="#ffffff" opacity="0.12"/>
+
+  <rect width="1600" height="1000" fill="#0b1220" opacity="0.03"/>
+</svg>

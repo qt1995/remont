@@ -1,0 +1,52 @@
+import { Header } from '@/components/layout/Header'
+import { Footer } from '@/components/layout/Footer'
+import { MobileCta } from '@/components/layout/MobileCta'
+import { Hero } from '@/components/sections/Hero'
+import { StageSliderSection } from '@/components/sections/StageSliderSection'
+import { Tariffs } from '@/components/sections/Tariffs'
+import { CalculatorSection } from '@/components/sections/CalculatorSection'
+import { PriceList } from '@/components/sections/PriceList'
+import { Portfolio } from '@/components/sections/Portfolio'
+import { Pains } from '@/components/sections/Pains'
+import { Process } from '@/components/sections/Process'
+import { Guarantees } from '@/components/sections/Guarantees'
+import { Reviews } from '@/components/sections/Reviews'
+import { Faq } from '@/components/sections/Faq'
+import { Contacts } from '@/components/sections/Contacts'
+import { RegionProvider } from '@/lib/region'
+import { LeadModalProvider } from '@/lib/leadModal'
+
+export default function App() {
+  return (
+    <RegionProvider>
+      <LeadModalProvider>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-200 focus:rounded-xl focus:bg-navy focus:px-5 focus:py-3 focus:text-white"
+        >
+          Перейти к содержимому
+        </a>
+
+        <Header />
+
+        <main id="main" className="pb-20 sm:pb-0">
+          <Hero />
+          <StageSliderSection />
+          <Tariffs />
+          <CalculatorSection />
+          <PriceList />
+          <Portfolio />
+          <Pains />
+          <Process />
+          <Guarantees />
+          <Reviews />
+          <Faq />
+          <Contacts />
+        </main>
+
+        <Footer />
+        <MobileCta />
+      </LeadModalProvider>
+    </RegionProvider>
+  )
+}
