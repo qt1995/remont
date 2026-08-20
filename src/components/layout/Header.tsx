@@ -6,7 +6,7 @@ import { track } from '@/lib/analytics'
 import { useRegion } from '@/lib/region'
 import { useLeadModal } from '@/lib/leadModal'
 import { useLockBody } from '@/lib/useLockBody'
-import { Logo } from '@/components/layout/Logo'
+import { Logo, Wordmark } from '@/components/layout/Logo'
 
 const nav = [
   { href: '#tariffs', label: 'Цены' },
@@ -61,9 +61,7 @@ export function Header() {
         >
           <Logo className="size-9 shrink-0 text-navy md:size-10" />
           <span className="leading-tight">
-            <span className="block font-display text-base font-bold tracking-tight whitespace-nowrap md:text-lg">
-              {settings.brand}
-            </span>
+            <Wordmark brand={settings.brand} className="block text-base md:text-lg" />
             <span className="hidden text-[11px] whitespace-nowrap text-subtle sm:block md:text-xs">
               ремонт квартир под ключ
             </span>

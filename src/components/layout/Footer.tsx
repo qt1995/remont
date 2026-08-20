@@ -1,5 +1,5 @@
 import { Mail, Phone } from 'lucide-react'
-import { Logo } from '@/components/layout/Logo'
+import { Logo, Wordmark } from '@/components/layout/Logo'
 import { useContent } from '@/lib/content'
 import { useRegion } from '@/lib/region'
 
@@ -48,7 +48,7 @@ export function Footer() {
         <div>
           <div className="flex items-center gap-2.5 text-white">
             <Logo className="size-10 text-white/12" />
-            <span className="font-display text-lg font-bold">{settings.brand}</span>
+            <Wordmark brand={settings.brand} className="text-lg" />
           </div>
           <p className="mt-4 max-w-xs text-[15px] leading-relaxed">
             Ремонт квартир под ключ в {region.nameIn}. Фиксированная смета, прозрачный прайс,

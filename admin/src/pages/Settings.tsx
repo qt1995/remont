@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { BarChart3, KeyRound, Save, Send } from 'lucide-react'
+import { BarChart3, ExternalLink, KeyRound, Save, Search, Send } from 'lucide-react'
 import { api, type Settings as SettingsMap } from '@/lib/api'
 import { Button, Card, Field, PageHeader, Spinner, Toggle, useToast } from '@/components/ui'
 import { CollectionEditor } from '@/components/CollectionEditor'
+import { ImagePicker } from '@/components/ImagePicker'
 
 export function SettingsPage() {
   const [s, setS] = useState<SettingsMap | null>(null)
@@ -226,6 +227,130 @@ export function SettingsPage() {
           </div>
         </Card>
 
+        <Card
+          title={
+            <span className="flex items-center gap-2">
+              <Search aria-hidden className="size-4 text-gold" />
+              SEO: как сайт выглядит в поиске и мессенджерах
+            </span>
+          }
+        >
+          <p className="mb-5 max-w-2xl text-[13px] text-subtle">
+            Эти поля подставляются в HTML на сервере — до того, как страница уйдёт роботу.
+            Заодно из них собираются <code>robots.txt</code>, <code>sitemap.xml</code> и разметка
+            организации для Яндекса и Google.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Адрес сайта"
+              hint="С https и без слеша на конце. Нужен для canonical и карты сайта."
+              className="sm:col-span-2"
+            >
+              <input
+                className="field"
+                value={s.siteUrl ?? ''}
+                onChange={(e) => set('siteUrl', e.target.value)}
+                placeholder="https://pro-comfort.pro"
+              />
+            </Field>
+
+            <Field
+              label="Заголовок страницы"
+              hint={counter(s.seoTitle, 60, 'В выдаче обрезается примерно на 60 символах')}
+              className="sm:col-span-2"
+            >
+              <input
+                className="field"
+                value={s.seoTitle ?? ''}
+                onChange={(e) => set('seoTitle', e.target.value)}
+              />
+            </Field>
+
+            <Field
+              label="Описание"
+              hint={counter(s.seoDescription, 160, 'Показывается под ссылкой в выдаче, ~160 символов')}
+              className="sm:col-span-2"
+            >
+              <textarea
+                className="field"
+                rows={3}
+                value={s.seoDescription ?? ''}
+                onChange={(e) => set('seoDescription', e.target.value)}
+              />
+            </Field>
+
+            <div className="sm:col-span-2">
+              <ImagePicker
+                label="Картинка для ссылок"
+                value={s.seoOgImage ?? ''}
+                onChange={(v) => set('seoOgImage', v)}
+              />
+              <p className="mt-1 text-[12px] text-subtle">
+                Она показывается, когда сайт кидают в Telegram или WhatsApp. Лучший размер —
+                1200×630.
+              </p>
+            </div>
+
+            <Field label="Индексация" hint="На время правок можно закрыть сайт от поисковиков">
+              <select
+                className="field"
+                value={s.seoRobots ?? 'index'}
+                onChange={(e) => set('seoRobots', e.target.value)}
+              >
+                <option value="index">Открыт для поисковиков</option>
+                <option value="noindex">Закрыт от индексации</option>
+              </select>
+            </Field>
+
+            <Field label="Код подтверждения Яндекса" hint="Из Яндекс.Вебмастера, мета-тег">
+              <input
+                className="field"
+                value={s.yandexVerification ?? ''}
+                onChange={(e) => set('yandexVerification', e.target.value)}
+              />
+            </Field>
+
+            <Field label="Код подтверждения Google" hint="Из Google Search Console" className="sm:col-span-2">
+              <input
+                className="field"
+                value={s.googleVerification ?? ''}
+                onChange={(e) => set('googleVerification', e.target.value)}
+              />
+            </Field>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-line pt-4">
+            <a
+              href="/robots.txt"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium hover:bg-sand"
+            >
+              <ExternalLink aria-hidden className="size-3.5" />
+              robots.txt
+            </a>
+            <a
+              href="/sitemap.xml"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium hover:bg-sand"
+            >
+              <ExternalLink aria-hidden className="size-3.5" />
+              sitemap.xml
+            </a>
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium hover:bg-sand"
+            >
+              <ExternalLink aria-hidden className="size-3.5" />
+              Открыть сайт
+            </a>
+          </div>
+        </Card>
+
         <Card title="Яндекс.Метрика">
           <div className="flex flex-wrap items-end gap-4">
             <Field
@@ -291,6 +416,18 @@ export function SettingsPage() {
 
       <PasswordCard />
     </>
+  )
+}
+
+/** Подсказка с длиной: у поисковиков она реально ограничена. */
+function counter(value: string | undefined, limit: number, hint: string) {
+  const len = (value ?? '').length
+  const over = len > limit
+  return (
+    <span className={over ? 'text-warn' : undefined}>
+      {hint} · {len}/{limit}
+      {over ? ' — длинновато' : ''}
+    </span>
   )
 }
 

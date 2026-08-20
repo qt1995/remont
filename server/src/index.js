@@ -7,6 +7,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { UPLOAD_DIR } from './db.js'
 import { readSession } from './lib/auth.js'
+import { renderIndex, robotsTxt, sitemapXml } from './lib/seo.js'
 import { authRouter } from './routes/auth.js'
 import { adminRouter } from './routes/admin.js'
 import { contentRouter } from './routes/content.js'
@@ -73,14 +74,26 @@ app.get('/admin/*', (_req, res, next) => {
 
 // Публичный сайт можно раздавать этим же процессом, если положить сюда сборку
 const siteDist = resolve(root, 'public', 'site')
-app.use(express.static(siteDist))
+const siteIndex = resolve(siteDist, 'index.html')
+
+app.get('/robots.txt', (_req, res) => res.type('text/plain; charset=utf-8').send(robotsTxt()))
+
+app.get('/sitemap.xml', (_req, res) => {
+  const xml = sitemapXml()
+  if (!xml) return res.status(404).type('text/plain').send('Не задан адрес сайта в настройках')
+  res.type('application/xml; charset=utf-8').send(xml)
+})
+
+// index.html не отдаём файлом: метатеги, Open Graph и разметку организации
+// подставляем из настроек, иначе поисковый робот их не увидит.
+app.use(express.static(siteDist, { index: false }))
+
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path.startsWith('/admin')) {
     return next()
   }
-  const index = resolve(siteDist, 'index.html')
-  if (!existsSync(index)) return next()
-  res.sendFile(index)
+  if (!existsSync(siteIndex)) return next()
+  res.type('text/html; charset=utf-8').send(renderIndex(siteIndex))
 })
 
 app.use((err, _req, res, _next) => {

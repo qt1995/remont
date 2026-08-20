@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="ПРО Комфорт — ремонт квартир под ключ">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111d33"/>
+      <stop offset="1" stop-color="#0b1220"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.18" r="0.6">
+      <stop offset="0" stop-color="#a16207" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#a16207" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <g stroke="#ffffff" stroke-opacity="0.05" stroke-width="1">
+    <path d="M0 90H1200M0 190H1200M0 290H1200M0 390H1200M0 490H1200M0 590H1200"/>
+    <path d="M100 0V630M220 0V630M340 0V630M460 0V630M580 0V630M700 0V630M820 0V630M940 0V630M1060 0V630"/>
+  </g>
+
+  <g transform="translate(96 92) scale(2.6)">
+    <rect x="0" y="0" width="40" height="40" rx="10" fill="#16233c"/>
+    <path d="M16 15 H24 L25.4 27.5 H14.6 Z" fill="#e2b458"/>
+    <path d="M9 10 H31 V27.5 H26 V15 H14 V27.5 H9 Z" fill="#fff"/>
+    <rect x="9" y="28.7" width="22" height="1.6" rx="0.8" fill="#fff" opacity="0.5"/>
+  </g>
+
+  <text x="96" y="330" font-family="Rubik, Arial, sans-serif" font-size="86" font-weight="700" fill="#ffffff">
+    ПРО Комфорт
+  </text>
+  <text x="96" y="404" font-family="Rubik, Arial, sans-serif" font-size="40" font-weight="500" fill="#e2b458">
+    Ремонт квартир под ключ
+  </text>
+  <text x="96" y="474" font-family="Inter, Arial, sans-serif" font-size="27" fill="#ffffff" fill-opacity="0.62">
+    Фиксированная смета · прозрачный прайс · гарантия 5 лет
+  </text>
+
+  <rect x="96" y="524" width="150" height="4" rx="2" fill="#a16207"/>
+</svg>

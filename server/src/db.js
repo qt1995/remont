@@ -229,7 +229,7 @@ CREATE TABLE IF NOT EXISTS media (
 
 /** Значения настроек по умолчанию — создаются один раз, потом правятся из админки. */
 export const DEFAULT_SETTINGS = {
-  brand: 'СТРОЙПРАВДА',
+  brand: 'ПРО Комфорт',
   tagline: 'Ремонт квартир под ключ',
   legal: 'ИП Иванов И. И.',
   inn: '000000000000',
@@ -246,6 +246,17 @@ export const DEFAULT_SETTINGS = {
   telegramChatId: '',
   telegramNotify: '1',
   sampleArea: '50',
+
+  // SEO — правится в админке, подставляется в HTML на сервере
+  siteUrl: 'https://pro-comfort.pro',
+  seoTitle: 'ПРО Комфорт — ремонт квартир под ключ',
+  seoDescription:
+    'Ремонт квартир под ключ с фиксированной сметой: прозрачный прайс на каждый вид работ, ' +
+    'договор со штрафом за просрочку, гарантия 5 лет. Расчёт стоимости за 60 секунд.',
+  seoOgImage: '/og-cover.svg',
+  seoRobots: 'index',
+  yandexVerification: '',
+  googleVerification: '',
 }
 
 const insertSetting = db.prepare(
