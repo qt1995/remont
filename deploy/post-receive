@@ -28,15 +28,16 @@ while read -r _old _new ref; do
   cd "$APP"
 
   echo "--- Зависимости сервера"
-  npm --prefix server ci --omit=dev --no-audit --no-fund --silent
+  (cd server && npm ci --omit=dev --no-audit --no-fund --silent)
 
+  # NODE_ENV=production заставляет npm пропускать devDependencies,
+  # а сборщик (vite, tsc) живёт именно там — для сборки его снимаем.
   echo "--- Сборка админки"
-  npm --prefix admin ci --no-audit --no-fund --silent
-  npm --prefix admin run build --silent
+  (cd admin && NODE_ENV=development npm ci --include=dev --no-audit --no-fund --silent && npm run build)
 
   echo "--- Сборка сайта"
-  npm ci --no-audit --no-fund --silent
-  VITE_API_URL="https://$DOMAIN" npm run build --silent
+  NODE_ENV=development npm ci --include=dev --no-audit --no-fund --silent
+  NODE_ENV=development VITE_API_URL="https://$DOMAIN" npm run build
   rm -rf server/public/site
   mkdir -p server/public
   cp -r dist server/public/site
