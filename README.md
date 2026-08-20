@@ -20,7 +20,7 @@ Vite 6 · React 19 · TypeScript · Tailwind CSS 4 · lucide-react. Никаки
 
 ## Публичная версия
 
-Сайт выложен на GitHub Pages: **https://qt1995.github.io/penis.github.io/**
+Сайт выложен на GitHub Pages: **https://qt1995.github.io/remont/**
 
 Обновить после правок — одна команда:
 
@@ -28,13 +28,12 @@ Vite 6 · React 19 · TypeScript · Tailwind CSS 4 · lucide-react. Никаки
 npm run deploy
 ```
 
-Она собирает сайт с базовым путём `/penis.github.io/` и force-push'ит папку `dist`
-в ветку `gh-pages`. Исходники живут в `main`, сборки историю не засоряют.
+Она собирает сайт с базовым путём `/remont/` и force-push'ит папку `dist` в ветку
+`gh-pages`. Исходники живут в `main`, сборки историю не засоряют.
 
-Базовый путь нужен потому, что репозиторий называется не `qt1995.github.io`, а
-`penis.github.io` — значит это не пользовательский сайт, а проектный, и он лежит
-в подпапке. Путь задаётся один раз в `vite.config.ts` (`PAGES_BASE`). Если репозиторий
-переименуют — поправить там же.
+Базовый путь нужен потому, что репозиторий называется не `qt1995.github.io`, а `remont` —
+значит это не пользовательский сайт, а проектный, и он лежит в подпапке. Путь задаётся
+один раз в `vite.config.ts` (`PAGES_BASE`), адрес репозитория — в `scripts/deploy-pages.mjs`.
 
 ---
 

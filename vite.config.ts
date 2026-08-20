@@ -5,7 +5,7 @@ import path from 'node:path'
 
 // На GitHub Pages сайт лежит в подпапке репозитория, поэтому нужен базовый путь.
 // Локальная разработка и обычная сборка остаются на "/".
-const PAGES_BASE = '/penis.github.io/'
+const PAGES_BASE = '/remont/'
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'pages' ? PAGES_BASE : '/',

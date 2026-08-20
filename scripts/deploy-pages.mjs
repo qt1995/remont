@@ -12,7 +12,7 @@ import { existsSync, rmSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const REMOTE = process.env.PAGES_REMOTE ?? 'https://github.com/qt1995/penis.github.io.git'
+const REMOTE = process.env.PAGES_REMOTE ?? 'https://github.com/qt1995/remont.git'
 const BRANCH = process.env.PAGES_BRANCH ?? 'gh-pages'
 
 // import.meta.dirname появился в Node 20.11 — берём путь через URL, чтобы работало и на 20.10
