@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { db } from '../db.js'
 import { notifyLead } from '../lib/telegram.js'
 import { rateLimit } from '../lib/rateLimit.js'
-import { buildPricePdf, pricePdfName } from '../lib/pdf.js'
+import { buildPricePdf, contentDisposition } from '../lib/pdf.js'
 
 export const publicRouter = Router()
 
@@ -117,7 +117,7 @@ publicRouter.get(
     )
 
     res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', 'attachment; filename="' + pricePdfName() + '"')
+    res.setHeader('Content-Disposition', contentDisposition())
 
     const doc = buildPricePdf({ regionId: String(req.query.region ?? '') })
     doc.pipe(res)

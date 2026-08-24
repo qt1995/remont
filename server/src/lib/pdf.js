@@ -210,12 +210,25 @@ export function buildPricePdf({ regionId } = {}) {
   return doc
 }
 
-/** Имя файла с датой — так в загрузках видно, насколько прайс свежий. */
+/**
+ * Имя файла с датой — так в загрузках видно, насколько прайс свежий.
+ *
+ * Возвращаем две формы: ASCII для старых клиентов и UTF-8 по RFC 5987.
+ * В обычный заголовок кириллицу класть нельзя — Node такой заголовок отвергает.
+ */
 export function pricePdfName() {
   const s = getSettings()
-  const slug = (s.brand || 'price')
-    .toLowerCase()
-    .replace(/[^a-zа-яё0-9]+/gi, '-')
-    .replace(/^-|-$/g, '')
-  return 'prays-' + slug + '-' + new Date().toISOString().slice(0, 10) + '.pdf'
+  const date = new Date().toISOString().slice(0, 10)
+
+  const pretty = 'Прайс ' + (s.brand || '') + ' ' + date + '.pdf'
+  const ascii = 'price-' + date + '.pdf'
+
+  return { ascii, pretty }
+}
+
+/** Готовый заголовок Content-Disposition с обоими вариантами имени. */
+export function contentDisposition() {
+  const { ascii, pretty } = pricePdfName()
+  const utf8 = "UTF-8" + "''" + encodeURIComponent(pretty)
+  return 'attachment; filename="' + ascii + '"; filename*=' + utf8
 }
