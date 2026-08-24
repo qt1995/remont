@@ -84,8 +84,10 @@ export function buildPricePdf({ regionId } = {}) {
     )
   y = doc.y + 16
 
+  const bottomEdge = () => doc.page.height - doc.page.margins.bottom - 26
+
   const ensureSpace = (need) => {
-    if (y + need < doc.page.height - 60) return
+    if (y + need < bottomEdge()) return
     doc.addPage()
     y = doc.page.margins.top
   }
@@ -178,12 +180,21 @@ export function buildPricePdf({ regionId } = {}) {
   }
 
   // ── Подвал на каждой странице
+  //
+  // Текст подвала лежит ниже нижнего поля, а pdfkit в таком случае заводит
+  // новую страницу — и так на каждую страницу, отсюда и пачка пустых.
+  // Поэтому на время отрисовки поле обнуляем.
   const range = doc.bufferedPageRange()
+
   for (let i = 0; i < range.count; i++) {
     doc.switchToPage(range.start + i)
-    const footY = doc.page.height - 42
 
-    doc.moveTo(left, footY - 8).lineTo(right, footY - 8).lineWidth(0.5).stroke(LINE)
+    const savedBottom = doc.page.margins.bottom
+    doc.page.margins.bottom = 0
+
+    const footY = doc.page.height - 40
+
+    doc.moveTo(left, footY - 10).lineTo(right, footY - 10).lineWidth(0.5).stroke(LINE)
 
     doc
       .font('body')
@@ -193,7 +204,7 @@ export function buildPricePdf({ regionId } = {}) {
         s.brand + ' · ' + s.phone + ' · ' + (s.siteUrl || '').replace(/^https?:\/\//, ''),
         left,
         footY,
-        { width: width / 2 },
+        { width: width / 2, lineBreak: false },
       )
 
     doc
@@ -203,7 +214,10 @@ export function buildPricePdf({ regionId } = {}) {
       .text('Стр. ' + (i + 1) + ' из ' + range.count, left + width / 2, footY, {
         width: width / 2,
         align: 'right',
+        lineBreak: false,
       })
+
+    doc.page.margins.bottom = savedBottom
   }
 
   doc.end()

@@ -24,6 +24,10 @@ export function Tariffs() {
   const sampleArea = settings.sampleArea || 50
   const list = tariffs.filter((t) => t.property === property)
 
+  // Карточки растягиваются на всю ширину ряда. Пока тарифов не больше пяти,
+  // ряд один; дальше лишние переносятся и центрируются.
+  const perRow = Math.min(Math.max(list.length, 1), 5)
+
   return (
     <Section
       id="tariffs"
@@ -45,9 +49,7 @@ export function Tariffs() {
         />
       }
     >
-      {/* Гибкая раскладка вместо сетки: когда тарифов меньше пяти,
-          ряд центрируется, а не липнет к левому краю */}
-      <div className="flex flex-wrap justify-center gap-5">
+      <div className="tariff-row" style={{ '--per-row': perRow } as React.CSSProperties}>
         {list.map((t) => {
           const perM2 = t.pricePerM2 * region.k
           const sample = roundTo(perM2 * sampleArea, 5000)
@@ -62,8 +64,7 @@ export function Tariffs() {
             <article
               key={t.id}
               className={
-                'group relative flex w-full flex-col overflow-hidden rounded-2xl border p-6 transition-[transform,box-shadow,border-color] duration-300 ease-[var(--ease-out-soft)] hover:-translate-y-1 hover:shadow-lift ' +
-                'md:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.834rem)] xl:w-[calc(20%-1rem)] ' +
+                'group relative flex flex-col overflow-hidden rounded-2xl border p-6 transition-[transform,box-shadow,border-color] duration-300 ease-[var(--ease-out-soft)] hover:-translate-y-1 hover:shadow-lift ' +
                 (hot
                   ? 'border-navy bg-navy text-white shadow-lift'
                   : 'border-line bg-white hover:border-navy/25')

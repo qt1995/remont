@@ -143,3 +143,41 @@
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: none; }
 }
+
+@layer components {
+  /*
+   * Раскладка тарифов.
+   *
+   * Карточки в ряду растягиваются на всю ширину, а количество в ряду задаётся
+   * переменной --per-row из разметки. Если тарифов больше, чем помещается,
+   * остаток переносится и центрируется, а не липнет к левому краю.
+   */
+  .tariff-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.25rem;
+  }
+
+  .tariff-row > * {
+    width: 100%;
+  }
+
+  @media (min-width: 768px) {
+    .tariff-row > * {
+      width: calc((100% - 1.25rem) / 2);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .tariff-row > * {
+      width: calc((100% - 2.5rem) / 3);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .tariff-row > * {
+      width: calc((100% - (var(--per-row, 4) - 1) * 1.25rem) / var(--per-row, 4));
+    }
+  }
+}
