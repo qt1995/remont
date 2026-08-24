@@ -112,7 +112,7 @@ export function Tariffs() {
                       (hot ? 'text-white/60' : 'text-subtle')
                     }
                   >
-                    от
+                    от{' '}
                   </span>
                 )}
                 <span className="text-[32px]">{formatMoney(perM2)}</span>
