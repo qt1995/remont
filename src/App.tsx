@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { MobileCta } from '@/components/layout/MobileCta'
+import { CookieNotice } from '@/components/layout/CookieNotice'
 import { Hero } from '@/components/sections/Hero'
 import { StageSliderSection } from '@/components/sections/StageSliderSection'
 import { Tariffs } from '@/components/sections/Tariffs'
@@ -72,6 +73,7 @@ export default function App() {
 
           <Footer />
           <MobileCta />
+          <CookieNotice />
         </LeadModalProvider>
       </RegionProvider>
     </ContentProvider>

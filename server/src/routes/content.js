@@ -107,6 +107,7 @@ export function buildContent() {
       calcMaterialsLabel: s.calcMaterialsLabel,
       calcMaterialsHint: s.calcMaterialsHint,
       pricePdfNote: s.pricePdfNote,
+      cookieNotice: s.cookieNotice === '1',
     },
     regions: all('SELECT * FROM regions WHERE active = 1 ORDER BY sort, id').map((r) => ({
       id: r.id,

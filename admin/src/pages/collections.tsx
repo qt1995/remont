@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { CollectionEditor, type ChildDef, type FieldDef } from '@/components/CollectionEditor'
 import { UNIT_SUGGESTIONS } from '@/components/RowTable'
+import { SettingsForm } from '@/components/SettingsForm'
 import { PageHeader } from '@/components/ui'
 import type { Row } from '@/lib/api'
 
@@ -261,12 +262,13 @@ export function WorksPage() {
 /* ─────────────────────────  Калькулятор  ───────────────────────── */
 
 const CALC_TABS = [
+  { id: 'rooms', label: 'Комнаты и санузлы' },
   { id: 'extras', label: 'Дополнительные опции' },
   { id: 'area', label: 'Зависимость от объёма' },
 ] as const
 
 export function CalculatorPage() {
-  const [tab, setTab] = useState<(typeof CALC_TABS)[number]['id']>('extras')
+  const [tab, setTab] = useState<(typeof CALC_TABS)[number]['id']>('rooms')
 
   return (
     <>
@@ -275,6 +277,43 @@ export function CalculatorPage() {
         description="Из чего складывается расчёт на сайте. Коэффициенты за комнаты и санузлы — в «Настройках»."
       />
       <Tabs tabs={CALC_TABS} value={tab} onChange={setTab} />
+
+      {tab === 'rooms' && (
+        <SettingsForm
+          title="Коэффициенты за комнаты и санузлы"
+          description="На той же площади каждая лишняя комната — это ещё стены, углы и двери, а каждый лишний санузел — ещё одна мокрая зона. Здесь задаётся, насколько это удорожает работы. Считается от первой комнаты и первого санузла: при 3 комнатах и надбавке 2% работы дорожают на 4%. Что сработало, видно в расчёте на сайте."
+          fields={[
+            {
+              name: 'calcRoomK',
+              label: 'Надбавка за комнату, %',
+              type: 'number',
+              hint: 'За каждую комнату сверх первой',
+            },
+            {
+              name: 'calcBathK',
+              label: 'Надбавка за санузел, %',
+              type: 'number',
+              hint: 'За каждый санузел сверх первого',
+            },
+            {
+              name: 'calcSpread',
+              label: 'Ширина вилки, %',
+              type: 'number',
+              hint: 'Насколько верхняя граница выше расчёта. 0 — показывать одну сумму',
+            },
+            {
+              name: 'calcMaterialsLabel',
+              label: 'Как называть материалы',
+              hint: 'Заголовок шага в калькуляторе',
+            },
+            {
+              name: 'calcMaterialsHint',
+              label: 'Пояснение под материалами',
+              type: 'textarea',
+            },
+          ]}
+        />
+      )}
 
       {tab === 'extras' && (
         <CollectionEditor

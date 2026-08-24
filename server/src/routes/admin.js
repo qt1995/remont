@@ -7,6 +7,7 @@ import { db, getSettings, setSettings, UPLOAD_DIR } from '../db.js'
 import { crudRouter } from '../lib/crud.js'
 import { changePassword, requireAuth } from '../lib/auth.js'
 import { sendTest } from '../lib/telegram.js'
+import { contractText, privacyText } from '../lib/legal.js'
 
 export const adminRouter = Router()
 
@@ -251,6 +252,16 @@ adminRouter.post('/settings/telegram-test', async (req, res) => {
     : req.body?.telegramBotToken || s.telegramBotToken
   const chat = req.body?.telegramChatId || s.telegramChatId
   res.json(await sendTest(token, chat))
+})
+
+/**
+ * Встроенный шаблон документа — чтобы в админке можно было начать
+ * не с пустого поля, а с готового текста и править его.
+ */
+adminRouter.get('/legal/:kind/template', (req, res) => {
+  if (req.params.kind === 'privacy') return res.json({ text: privacyText() })
+  if (req.params.kind === 'contract') return res.json({ text: contractText() })
+  res.status(404).json({ error: 'Неизвестный документ' })
 })
 
 /* ─────────────────────────  Заявки  ───────────────────────── */

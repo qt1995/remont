@@ -123,36 +123,41 @@ export function PriceList() {
                 </h3>
 
                 <div id={'price-' + g.id} hidden={!open} className="bg-sand/70 px-5 pb-5 md:px-7">
-                  <table className="w-full text-left">
+                  <table className="w-full table-fixed text-left">
                     <caption className="sr-only">{g.name}: цены на работы</caption>
+                    <colgroup>
+                      <col />
+                      <col className="w-[140px]" />
+                      <col className="w-[180px]" />
+                    </colgroup>
                     <thead>
                       <tr className="text-[13px] tracking-wide text-subtle uppercase">
                         <th scope="col" className="py-3 font-medium">
                           Вид работ
                         </th>
-                        <th scope="col" className="py-3 text-right font-medium">
+                        <th scope="col" className="px-4 py-3 text-right font-medium">
                           Цена
                         </th>
-                        <th scope="col" className="w-24 py-3 text-right font-medium">
+                        <th scope="col" className="py-3 text-right font-medium">
                           Ед.
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {g.items.map((i) => (
-                        <tr key={i.name} className="border-t border-line/70">
+                        <tr key={i.name} className="border-t border-line/70 align-top">
                           <td className="py-3 pr-4 text-[15px]">
                             <RichText text={i.name} emphasis={i.emphasis} />
                             {i.comment && (
-                              <span className="mt-0.5 block text-[13px] leading-snug text-subtle">
+                              <span className="mt-1 block text-[13px] leading-snug whitespace-pre-line text-subtle italic">
                                 {i.comment}
                               </span>
                             )}
                           </td>
-                          <td className="tnum py-3 text-right font-display font-medium whitespace-nowrap">
+                          <td className="tnum px-4 py-3 text-right font-display font-medium whitespace-nowrap">
                             {i.price > 0 ? 'от ' + formatMoney(i.price * region.k) : '—'}
                           </td>
-                          <td className="py-3 text-right text-sm whitespace-nowrap text-subtle">
+                          <td className="py-3 text-right text-sm leading-snug text-balance text-subtle">
                             {i.unit}
                           </td>
                         </tr>

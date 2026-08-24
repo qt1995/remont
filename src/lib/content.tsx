@@ -50,6 +50,7 @@ export type SiteContent = {
     calcMaterialsLabel: string
     calcMaterialsHint: string
     pricePdfNote: string
+    cookieNotice: boolean
   }
   regions: { id: string; name: string; nameIn: string; k: number }[]
   stats: { value: string; suffix: string; label: string }[]
@@ -158,6 +159,7 @@ export const fallbackContent: SiteContent = {
     calcMaterialsHint:
       'Чистовые материалы (плитка, ламинат, обои, сантехника) считаются отдельно — их выбираете вы.',
     pricePdfNote: 'Полный прайс со всеми позициями — в PDF по кнопке ниже.',
+    cookieNotice: false,
   },
   regions: regionList.map((r) => ({ id: r.id, name: r.name, nameIn: r.nameIn, k: r.k })),
   stats: fallbackStats.map((s) => ({ value: s.value, suffix: s.suffix, label: s.label })),
@@ -278,6 +280,12 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useContent = () => useContext(ContentContext)
+
+/**
+ * Ссылка на юридический документ. Их отдаёт сервер отдельными страницами;
+ * без сервера (сборка для Pages) ведём на подпись в подвале.
+ */
+export const docUrl = (path: string) => (API_ENABLED ? API_URL + path : '#privacy')
 
 /** Ссылка на картинку: из админки, из папки сайта или внешняя. */
 export function mediaUrl(path: string) {

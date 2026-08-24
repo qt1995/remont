@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { UPLOAD_DIR } from './db.js'
 import { readSession } from './lib/auth.js'
 import { renderIndex, robotsTxt, sitemapXml } from './lib/seo.js'
+import { renderDocument } from './lib/legal.js'
 import { authRouter } from './routes/auth.js'
 import { adminRouter } from './routes/admin.js'
 import { contentRouter } from './routes/content.js'
@@ -75,6 +76,14 @@ app.get('/admin/*', (_req, res, next) => {
 // Публичный сайт можно раздавать этим же процессом, если положить сюда сборку
 const siteDist = resolve(root, 'public', 'site')
 const siteIndex = resolve(siteDist, 'index.html')
+
+// Политика должна быть в свободном доступе — отдельной страницей, а не модалкой
+app.get('/privacy', (_req, res) =>
+  res.type('text/html; charset=utf-8').send(renderDocument('privacy')),
+)
+app.get('/contract', (_req, res) =>
+  res.type('text/html; charset=utf-8').send(renderDocument('contract')),
+)
 
 app.get('/robots.txt', (_req, res) => res.type('text/plain; charset=utf-8').send(robotsTxt()))
 

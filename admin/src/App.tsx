@@ -7,6 +7,7 @@ import {
   Images,
   Inbox,
   Layers,
+  Scale,
   LogOut,
   Menu,
   Calculator,
@@ -29,6 +30,7 @@ import {
 } from '@/pages/collections'
 import { SettingsPage } from '@/pages/Settings'
 import { MediaPage } from '@/pages/Media'
+import { LegalPage } from '@/pages/Legal'
 
 const NAV = [
   { id: 'dashboard', label: 'Сводка', icon: ChartNoAxesCombined },
@@ -39,6 +41,7 @@ const NAV = [
   { id: 'works', label: 'Работы', icon: Images },
   { id: 'content', label: 'Тексты', icon: FileText },
   { id: 'media', label: 'Файлы', icon: FolderOpen },
+  { id: 'legal', label: 'Документы', icon: Scale },
   { id: 'settings', label: 'Настройки', icon: SettingsIcon },
 ]
 
@@ -168,6 +171,7 @@ function Shell() {
         {route === 'works' && <WorksPage />}
         {route === 'content' && <ContentPage />}
         {route === 'media' && <MediaPage />}
+        {route === 'legal' && <LegalPage />}
         {route === 'settings' && <SettingsPage />}
         {!NAV.some((n) => n.id === route) && (
           <div className="py-20 text-center">

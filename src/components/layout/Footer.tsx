@@ -1,6 +1,6 @@
 import { Mail, Phone } from 'lucide-react'
 import { Logo, Wordmark } from '@/components/layout/Logo'
-import { useContent } from '@/lib/content'
+import { useContent, docUrl } from '@/lib/content'
 import { useRegion } from '@/lib/region'
 
 const columns = [
@@ -94,10 +94,15 @@ export function Footer() {
           <p>
             © {year} {settings.brand}. {settings.legal}, ИНН {settings.inn}
           </p>
-          <p id="privacy" className="max-w-xl sm:text-right">
-            Цены на сайте не являются публичной офертой. Политика обработки персональных данных —
-            документ в подготовке.
-          </p>
+          <div id="privacy" className="flex flex-wrap gap-x-5 gap-y-1 sm:justify-end">
+            <a href={docUrl('/privacy')} className="hover:text-gold-300">
+              Политика обработки персональных данных
+            </a>
+            <a href={docUrl('/contract')} className="hover:text-gold-300">
+              Договор подряда
+            </a>
+            <span className="text-white/40">Цены на сайте не являются публичной офертой</span>
+          </div>
         </div>
       </div>
     </footer>

@@ -154,15 +154,20 @@ export function sitemapXml() {
 
   const lastmod = new Date().toISOString().slice(0, 10)
 
-  return (
-    '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    '  <url>\n' +
-    '    <loc>' + esc(base) + '/</loc>\n' +
-    '    <lastmod>' + lastmod + '</lastmod>\n' +
-    '    <changefreq>weekly</changefreq>\n' +
-    '    <priority>1.0</priority>\n' +
-    '  </url>\n' +
-    '</urlset>\n'
-  )
+  const url = (path, priority, freq) => `  <url>
+    <loc>${esc(base)}${path}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${freq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    url('/', '1.0', 'weekly'),
+    url('/privacy', '0.3', 'yearly'),
+    url('/contract', '0.3', 'yearly'),
+    '</urlset>',
+    '',
+  ].join('\n')
 }

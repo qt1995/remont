@@ -197,11 +197,9 @@ export function RowTable({
                   </div>
 
                   {commentField && (
-                    <input
-                      className="field mt-1.5 text-[13px]"
-                      placeholder="Комментарий к работе — покажем под названием"
+                    <CommentField
                       value={String(row[commentField] ?? '')}
-                      onChange={(e) => update(i, { [commentField]: e.target.value })}
+                      onChange={(v) => update(i, { [commentField]: v })}
                     />
                   )}
                 </div>
@@ -368,3 +366,39 @@ export const UNIT_SUGGESTIONS = [
   'услуга',
   'входит в стоимость',
 ]
+
+const MAX_COMMENT_LINES = 2
+
+/**
+ * Комментарий под строкой прайса. На сайте выводится мелким курсивом.
+ *
+ * Enter здесь отправил бы форму, поэтому перенос строки — Shift+Enter,
+ * и не больше двух строк: длинный комментарий ломает вёрстку таблицы.
+ */
+function CommentField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const lines = value.split('\n')
+  const full = lines.length >= MAX_COMMENT_LINES
+
+  const clamp = (text: string) =>
+    text.split('\n').slice(0, MAX_COMMENT_LINES).join('\n')
+
+  return (
+    <div className="mt-1.5">
+      <textarea
+        className="field text-[13px] italic"
+        rows={Math.min(lines.length, MAX_COMMENT_LINES)}
+        placeholder="Комментарий — покажем под названием мелким курсивом"
+        value={value}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter') return
+          // Обычный Enter отправил бы форму — гасим его
+          if (!e.shiftKey || full) e.preventDefault()
+        }}
+        onChange={(e) => onChange(clamp(e.target.value))}
+      />
+      <span className="mt-0.5 block text-[11px] text-subtle">
+        {full ? 'Больше двух строк не поместится' : 'Shift + Enter — вторая строка'}
+      </span>
+    </div>
+  )
+}

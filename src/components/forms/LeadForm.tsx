@@ -2,7 +2,7 @@ import { useId, useRef, useState } from 'react'
 import { CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { formatPhone, isPhoneValid, submitLead } from '@/lib/lead'
-import { useContent } from '@/lib/content'
+import { useContent, docUrl } from '@/lib/content'
 
 type Props = {
   source: string
@@ -180,7 +180,12 @@ export function LeadForm({
         <ShieldCheck aria-hidden className="mt-0.5 size-4 shrink-0 text-gold" />
         <span>
           Нажимая кнопку, вы соглашаетесь с{' '}
-          <a href="#privacy" className="underline underline-offset-2 hover:text-navy">
+          <a
+            href={docUrl('/privacy')}
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2 hover:text-navy"
+          >
             политикой обработки персональных данных
           </a>
           .
