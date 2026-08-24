@@ -8,6 +8,7 @@ import {
   Inbox,
   Layers,
   Scale,
+  Dices,
   LogOut,
   Menu,
   Calculator,
@@ -31,6 +32,7 @@ import {
 import { SettingsPage } from '@/pages/Settings'
 import { MediaPage } from '@/pages/Media'
 import { LegalPage } from '@/pages/Legal'
+import { CasinoPage } from '@/pages/Casino'
 
 const NAV = [
   { id: 'dashboard', label: 'Сводка', icon: ChartNoAxesCombined },
@@ -43,6 +45,7 @@ const NAV = [
   { id: 'media', label: 'Файлы', icon: FolderOpen },
   { id: 'legal', label: 'Документы', icon: Scale },
   { id: 'settings', label: 'Настройки', icon: SettingsIcon },
+  { id: 'casino', label: 'Казик', icon: Dices },
 ]
 
 const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://qt1995.github.io/remont/'
@@ -173,6 +176,7 @@ function Shell() {
         {route === 'media' && <MediaPage />}
         {route === 'legal' && <LegalPage />}
         {route === 'settings' && <SettingsPage />}
+        {route === 'casino' && <CasinoPage />}
         {!NAV.some((n) => n.id === route) && (
           <div className="py-20 text-center">
             <p className="font-display text-lg font-semibold">Раздел не найден</p>
