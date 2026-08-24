@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { db } from '../db.js'
 import { notifyLead } from '../lib/telegram.js'
 import { rateLimit } from '../lib/rateLimit.js'
+import { buildPricePdf, pricePdfName } from '../lib/pdf.js'
 
 export const publicRouter = Router()
 
@@ -98,5 +99,27 @@ publicRouter.post(
 
     tx(list.slice(0, 20))
     res.status(204).end()
+  },
+)
+
+/**
+ * Прайс в PDF. Формируется на лету из базы — файл нигде не лежит и не устаревает.
+ * Скачивается по кнопке с сайта; заодно отмечаем событие в своей статистике.
+ */
+publicRouter.get(
+  '/price.pdf',
+  rateLimit({ windowMs: 60_000, max: 20, message: 'Слишком часто' }),
+  (req, res) => {
+    db.prepare('INSERT INTO events (type, path, meta) VALUES (?, ?, ?)').run(
+      'price_pdf',
+      '/',
+      JSON.stringify({ region: req.query.region ?? '' }),
+    )
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader('Content-Disposition', 'attachment; filename="' + pricePdfName() + '"')
+
+    const doc = buildPricePdf({ regionId: String(req.query.region ?? '') })
+    doc.pipe(res)
   },
 )

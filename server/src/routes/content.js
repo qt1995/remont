@@ -22,19 +22,42 @@ export function buildContent() {
     termFrom: t.term_from,
     termTo: t.term_to,
     popular: !!t.popular,
-    includes: tariffItems.filter((i) => i.tariff_id === t.id && i.kind === 'include').map((i) => i.text),
-    excludes: tariffItems.filter((i) => i.tariff_id === t.id && i.kind === 'exclude').map((i) => i.text),
+    priceFrom: !!t.price_from,
+    materialsNote: t.materials_note,
+    includes: tariffItems
+      .filter((i) => i.tariff_id === t.id && i.kind === 'include')
+      .map((i) => ({ text: i.text, emphasis: i.emphasis || undefined })),
+    excludes: tariffItems
+      .filter((i) => i.tariff_id === t.id && i.kind === 'exclude')
+      .map((i) => ({ text: i.text, emphasis: i.emphasis || undefined })),
   }))
 
   const priceItems = all('SELECT * FROM price_items ORDER BY sort, id')
-  const priceGroups = all('SELECT * FROM price_groups WHERE active = 1 ORDER BY sort, id').map((g) => ({
-    id: g.id,
-    name: g.name,
-    hint: g.hint,
-    items: priceItems
-      .filter((i) => i.group_id === g.id)
-      .map((i) => ({ name: i.name, price: i.price, unit: i.unit, note: i.note || undefined })),
-  }))
+  const defaultLimit = Number(s.priceVisibleLimit) || 0
+
+  const priceGroups = all('SELECT * FROM price_groups WHERE active = 1 ORDER BY sort, id').map((g) => {
+    // Скрытые строки на сайт не уходят вовсе, но остаются в PDF
+    const visible = priceItems.filter((i) => i.group_id === g.id && i.active)
+    const limit = g.visible_limit > 0 ? g.visible_limit : defaultLimit
+    const shown = limit > 0 ? visible.slice(0, limit) : visible
+    const total = priceItems.filter((i) => i.group_id === g.id).length
+
+    return {
+      id: g.id,
+      name: g.name,
+      hint: g.hint,
+      total,
+      hidden: total - shown.length,
+      items: shown.map((i) => ({
+        name: i.name,
+        price: i.price,
+        unit: i.unit,
+        note: i.note || undefined,
+        comment: i.comment || undefined,
+        emphasis: i.emphasis || undefined,
+      })),
+    }
+  })
 
   const scope = all('SELECT * FROM work_scope ORDER BY sort, id')
   const works = all('SELECT * FROM works WHERE active = 1 ORDER BY sort, id').map((w) => ({
@@ -74,6 +97,16 @@ export function buildContent() {
         : null,
       yandexMetrikaId: s.yandexMetrikaId,
       sampleArea: Number(s.sampleArea) || 50,
+      heroTariffA: s.heroTariffA,
+      heroTariffB: s.heroTariffB,
+      heroPriceLabelA: s.heroPriceLabelA,
+      heroPriceLabelB: s.heroPriceLabelB,
+      calcRoomK: Number(s.calcRoomK) || 0,
+      calcBathK: Number(s.calcBathK) || 0,
+      calcSpread: Number(s.calcSpread) || 10,
+      calcMaterialsLabel: s.calcMaterialsLabel,
+      calcMaterialsHint: s.calcMaterialsHint,
+      pricePdfNote: s.pricePdfNote,
     },
     regions: all('SELECT * FROM regions WHERE active = 1 ORDER BY sort, id').map((r) => ({
       id: r.id,
@@ -136,6 +169,35 @@ export function buildContent() {
       text: x.text,
     })),
     faq: all('SELECT * FROM faq WHERE active = 1 ORDER BY sort, id').map((x) => ({ q: x.q, a: x.a })),
+
+    tariffNotes: all('SELECT * FROM tariff_notes WHERE active = 1 ORDER BY sort, id').map((x) => ({
+      title: x.title,
+      value: x.value,
+      note: x.note,
+    })),
+    calcExtras: all('SELECT * FROM calc_extras WHERE active = 1 ORDER BY sort, id').map((x) => ({
+      id: x.id,
+      label: x.label,
+      hint: x.hint,
+      kind: x.kind,
+      amount: x.amount,
+    })),
+    areaTiers: all('SELECT * FROM area_tiers ORDER BY area_from').map((x) => ({
+      areaFrom: x.area_from,
+      k: x.k,
+      label: x.label,
+    })),
+    heroFeatures: all('SELECT * FROM hero_features ORDER BY sort, id').map((x) => ({
+      icon: x.icon,
+      title: x.title,
+      text: x.text,
+    })),
+    partners: all('SELECT * FROM partners WHERE active = 1 ORDER BY sort, id').map((x) => ({
+      name: x.name,
+      note: x.note,
+      logo: x.logo,
+      url: x.url,
+    })),
   }
 }
 

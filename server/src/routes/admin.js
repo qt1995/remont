@@ -31,10 +31,16 @@ adminRouter.use(
       T('term_from', 'int'),
       T('term_to', 'int'),
       T('popular', 'bool'),
+      T('price_from', 'bool'),
+      T('materials_note'),
       T('sort', 'int'),
       T('active', 'bool'),
     ],
-    child: { table: 'tariff_items', fk: 'tariff_id', columns: [T('kind'), T('text')] },
+    child: {
+      table: 'tariff_items',
+      fk: 'tariff_id',
+      columns: [T('kind'), T('text'), T('emphasis')],
+    },
   }),
 )
 
@@ -43,11 +49,24 @@ adminRouter.use(
   crudRouter({
     table: 'price_groups',
     idType: 'text',
-    columns: [T('name'), T('hint'), T('sort', 'int'), T('active', 'bool')],
+    columns: [
+      T('name'),
+      T('hint'),
+      T('visible_limit', 'int'),
+      T('sort', 'int'),
+      T('active', 'bool'),
+    ],
     child: {
       table: 'price_items',
       fk: 'group_id',
-      columns: [T('name'), T('price', 'int'), T('unit'), T('note')],
+      columns: [
+        T('name'),
+        T('price', 'int'),
+        T('unit'),
+        T('comment'),
+        T('emphasis'),
+        T('active', 'bool'),
+      ],
     },
   }),
 )
@@ -150,6 +169,54 @@ adminRouter.use(
       T('sort', 'int'),
       T('active', 'bool'),
     ],
+  }),
+)
+
+adminRouter.use(
+  '/tariff-notes',
+  crudRouter({
+    table: 'tariff_notes',
+    columns: [T('title'), T('value'), T('note'), T('sort', 'int'), T('active', 'bool')],
+  }),
+)
+
+adminRouter.use(
+  '/calc-extras',
+  crudRouter({
+    table: 'calc_extras',
+    idType: 'text',
+    columns: [
+      T('label'),
+      T('hint'),
+      T('kind'),
+      T('amount', 'int'),
+      T('sort', 'int'),
+      T('active', 'bool'),
+    ],
+  }),
+)
+
+adminRouter.use(
+  '/area-tiers',
+  crudRouter({
+    table: 'area_tiers',
+    columns: [T('area_from', 'int'), T('k', 'real'), T('label'), T('sort', 'int')],
+  }),
+)
+
+adminRouter.use(
+  '/hero-features',
+  crudRouter({
+    table: 'hero_features',
+    columns: [T('icon'), T('title'), T('text'), T('sort', 'int')],
+  }),
+)
+
+adminRouter.use(
+  '/partners',
+  crudRouter({
+    table: 'partners',
+    columns: [T('name'), T('note'), T('logo'), T('url'), T('sort', 'int'), T('active', 'bool')],
   }),
 )
 

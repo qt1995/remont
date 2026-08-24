@@ -1,6 +1,31 @@
 import { Router } from 'express'
 import { db } from '../db.js'
 
+/**
+ * Ошибки SQLite наружу уходят как 400 с человеческим текстом: молчаливый 500
+ * в админке выглядит так, будто «просто не сохраняется».
+ */
+function handle(res, fn) {
+  try {
+    return fn()
+  } catch (e) {
+    const message = String(e?.message ?? e)
+    if (message.includes('CHECK constraint')) {
+      return res.status(400).json({
+        error: 'Одно из полей заполнено недопустимым значением — проверьте выпадающие списки в строках',
+      })
+    }
+    if (message.includes('UNIQUE constraint')) {
+      return res.status(409).json({ error: 'Запись с таким идентификатором уже есть' })
+    }
+    if (message.includes('NOT NULL')) {
+      return res.status(400).json({ error: 'Не заполнено обязательное поле' })
+    }
+    console.error('[crud]', e)
+    return res.status(400).json({ error: 'Не удалось сохранить: ' + message })
+  }
+}
+
 const cast = (type, value) => {
   if (type === 'int') return Math.trunc(Number(value) || 0)
   if (type === 'real') return Number(value) || 0
@@ -53,7 +78,8 @@ export function crudRouter({ table, columns, idColumn = 'id', idType = 'int', ch
     res.json(rows)
   })
 
-  router.post('/', (req, res) => {
+  router.post('/', (req, res) =>
+    handle(res, () => {
     const data = pick(req.body)
 
     if (idType === 'text') {
@@ -85,9 +111,11 @@ export function crudRouter({ table, columns, idColumn = 'id', idType = 'int', ch
     const row = db.prepare(`SELECT * FROM ${table} WHERE ${idColumn} = ?`).get(id)
     if (child) row.items = loadChildren(id)
     res.status(201).json(row)
-  })
+    }),
+  )
 
-  router.put('/:id', (req, res) => {
+  router.put('/:id', (req, res) =>
+    handle(res, () => {
     const id = idType === 'text' ? req.params.id : Number(req.params.id)
     const exists = db.prepare(`SELECT 1 FROM ${table} WHERE ${idColumn} = ?`).get(id)
     if (!exists) return res.status(404).json({ error: 'Запись не найдена' })
@@ -108,7 +136,8 @@ export function crudRouter({ table, columns, idColumn = 'id', idType = 'int', ch
     const row = db.prepare(`SELECT * FROM ${table} WHERE ${idColumn} = ?`).get(id)
     if (child) row.items = loadChildren(id)
     res.json(row)
-  })
+    }),
+  )
 
   router.delete('/:id', (req, res) => {
     const id = idType === 'text' ? req.params.id : Number(req.params.id)

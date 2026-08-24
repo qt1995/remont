@@ -3,14 +3,7 @@ import { Gauge, Minus, Plus, Timer } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
 import { Segmented } from '@/components/ui/Segmented'
 import { Button } from '@/components/ui/Button'
-import {
-  calculate,
-  EXTRAS,
-  tariffsFor,
-  type ExtraId,
-  type MaterialsMode,
-  type PropertyType,
-} from '@/lib/calc'
+import { calculate, tariffsFor, type MaterialsMode, type PropertyType } from '@/lib/calc'
 import { useContent } from '@/lib/content'
 import { track } from '@/lib/analytics'
 import { formatDays, formatMoney, roundTo } from '@/lib/format'
@@ -20,11 +13,6 @@ import { useLeadModal } from '@/lib/leadModal'
 const propertyOptions = [
   { id: 'new' as PropertyType, label: 'Новостройка' },
   { id: 'old' as PropertyType, label: 'Вторичка' },
-]
-
-const materialOptions = [
-  { id: 'own' as MaterialsMode, label: 'Закупаю сам' },
-  { id: 'ours' as MaterialsMode, label: 'Закупаете вы' },
 ]
 
 function StepTitle({ n, children }: { n: number; children: React.ReactNode }) {
@@ -87,15 +75,21 @@ function Stepper({
 export function CalculatorSection() {
   const { region } = useRegion()
   const { openLead } = useLeadModal()
-  const { tariffs, furnishingAddon } = useContent()
+  const content = useContent()
+  const { tariffs, calcExtras, settings } = content
 
   const [property, setProperty] = useState<PropertyType>('new')
-  const [tariffId, setTariffId] = useState('new-turnkey')
+  const [tariffId, setTariffId] = useState('')
   const [area, setArea] = useState(52)
   const [rooms, setRooms] = useState(2)
   const [bathrooms, setBathrooms] = useState(1)
   const [materials, setMaterials] = useState<MaterialsMode>('ours')
-  const [extras, setExtras] = useState<ExtraId[]>(['design'])
+  const [extras, setExtras] = useState<string[]>([])
+
+  const materialOptions = [
+    { id: 'own' as MaterialsMode, label: 'Закупаю сам' },
+    { id: 'ours' as MaterialsMode, label: 'Закупаете вы' },
+  ]
 
   const list = tariffsFor(tariffs, property)
 
@@ -112,7 +106,7 @@ export function CalculatorSection() {
 
   const result = useMemo(
     () =>
-      calculate(tariffs, {
+      calculate(content, {
         tariffId,
         area,
         rooms,
@@ -120,9 +114,11 @@ export function CalculatorSection() {
         materials,
         extras,
         regionK: region.k,
-        furnishingPerM2: furnishingAddon.pricePerM2,
+        roomK: settings.calcRoomK,
+        bathK: settings.calcBathK,
+        spread: settings.calcSpread,
       }),
-    [tariffs, tariffId, area, rooms, bathrooms, materials, extras, region.k, furnishingAddon.pricePerM2],
+    [content, tariffId, area, rooms, bathrooms, materials, extras, region.k, settings],
   )
 
   // Одно событие на визит: интересно, доходят ли вообще до калькулятора
@@ -133,17 +129,18 @@ export function CalculatorSection() {
     track('calc_use', { tariff: result.tariff.name, area })
   }, [result, area])
 
-  const toggleExtra = (id: ExtraId) =>
+  const toggleExtra = (id: string) =>
     setExtras((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
   const withMaterials = result?.tariff.withMaterials ?? false
+  const materialsLabel = settings.calcMaterialsLabel || 'Черновые материалы'
 
   return (
     <Section
       id="calc"
       eyebrow="Калькулятор"
       title="Прикидка стоимости за 60 секунд"
-      lead="Шесть вопросов — и вы видите вилку по деньгам и срокам. Это не смета, а честный ориентир: точную сумму даём после замера."
+      lead="Несколько вопросов — и вы видите вилку по деньгам и срокам. Это не смета, а честный ориентир: точную сумму даём после замера."
     >
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-8">
         <div className="space-y-7 rounded-2xl border border-line bg-white p-6 shadow-card md:p-8">
@@ -175,7 +172,8 @@ export function CalculatorSection() {
                   >
                     <span className="block font-display text-[15px] font-medium">{t.name}</span>
                     <span className="tnum mt-0.5 block text-sm text-subtle">
-                      от {formatMoney(t.pricePerM2 * region.k)}/м²
+                      {t.priceFrom ? 'от ' : ''}
+                      {formatMoney(t.pricePerM2 * region.k)}/м²
                     </span>
                   </button>
                 )
@@ -223,6 +221,11 @@ export function CalculatorSection() {
 
           <div>
             <StepTitle n={4}>Комнаты и санузлы</StepTitle>
+            <p className="mt-1 mb-3 text-sm text-subtle">
+              На той же площади каждая лишняя комната — это ещё стены, углы и двери, а каждый лишний
+              санузел — ещё одна мокрая зона с гидроизоляцией. Насколько именно это удорожает работу,
+              видно в расчёте справа.
+            </p>
             <div className="flex flex-wrap gap-6">
               <Stepper label="Комнат" value={rooms} min={1} max={6} onChange={setRooms} />
               <Stepper label="Санузлов" value={bathrooms} min={1} max={4} onChange={setBathrooms} />
@@ -231,15 +234,15 @@ export function CalculatorSection() {
 
           {!withMaterials && (
             <div>
-              <StepTitle n={5}>Материалы</StepTitle>
+              <StepTitle n={5}>{materialsLabel}</StepTitle>
               <p className="mt-1 mb-3 text-sm text-subtle">
-                Если закупаете сами — мы даём спецификацию с точными объёмами.
+                {settings.calcMaterialsHint}
               </p>
               <Segmented
                 options={materialOptions}
                 value={materials}
                 onChange={setMaterials}
-                ariaLabel="Кто закупает материалы"
+                ariaLabel="Кто закупает черновые материалы"
                 size="sm"
               />
             </div>
@@ -248,8 +251,15 @@ export function CalculatorSection() {
           <div>
             <StepTitle n={withMaterials ? 5 : 6}>Дополнительно</StepTitle>
             <div className="grid gap-2 sm:grid-cols-2">
-              {EXTRAS.map((e) => {
+              {calcExtras.map((e) => {
                 const active = extras.includes(e.id)
+                const price =
+                  e.kind === 'per_m2'
+                    ? formatMoney(e.amount * region.k) + '/м²'
+                    : e.kind === 'per_bath'
+                      ? formatMoney(e.amount * region.k) + ' за санузел'
+                      : formatMoney(e.amount * region.k)
+
                 return (
                   <label
                     key={e.id}
@@ -264,11 +274,16 @@ export function CalculatorSection() {
                       onChange={() => toggleExtra(e.id)}
                       className="mt-0.5 size-5 shrink-0 cursor-pointer accent-gold"
                     />
-                    <span>
-                      <span className="block font-display text-[15px] font-medium">{e.label}</span>
-                      <span className="mt-0.5 block text-[13px] leading-snug text-subtle">
-                        {e.hint}
+                    <span className="min-w-0">
+                      <span className="flex flex-wrap items-baseline gap-x-2">
+                        <span className="font-display text-[15px] font-medium">{e.label}</span>
+                        <span className="tnum text-[13px] font-medium text-gold">{price}</span>
                       </span>
+                      {e.hint && (
+                        <span className="mt-0.5 block text-[13px] leading-snug text-subtle">
+                          {e.hint}
+                        </span>
+                      )}
                     </span>
                   </label>
                 )
@@ -285,19 +300,19 @@ export function CalculatorSection() {
               aria-hidden
               className="pointer-events-none absolute -top-24 -right-24 size-56 rounded-full bg-gold/20 blur-[70px]"
             />
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[13px] text-white/80">
+            <p className="relative mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[13px] text-white/80">
               <Timer aria-hidden className="size-4 text-gold-300" />
               Ориентир, а не финальная смета
             </p>
 
-            <div aria-live="polite">
+            <div aria-live="polite" className="relative">
               {result && (
                 <>
                   <p className="text-[13px] tracking-wide text-white/50 uppercase">
                     Ремонт «{result.tariff.name}», {area} м², {region.name}
                   </p>
                   <p className="tnum mt-2 font-display text-[36px] leading-tight font-bold md:text-[42px]">
-                    {formatMoney(roundTo(result.min, 10000))}
+                    от {formatMoney(roundTo(result.min, 10000))}
                   </p>
                   <p className="tnum -mt-1 font-display text-lg text-white/60">
                     до {formatMoney(roundTo(result.max, 10000))}
@@ -310,7 +325,7 @@ export function CalculatorSection() {
                     </div>
                     {result.materials > 0 && (
                       <div className="flex justify-between gap-4">
-                        <dt className="text-white/60">Материалы</dt>
+                        <dt className="text-white/60">{materialsLabel}</dt>
                         <dd className="tnum font-medium">{formatMoney(result.materials)}</dd>
                       </div>
                     )}
@@ -330,6 +345,22 @@ export function CalculatorSection() {
                     </div>
                   </dl>
 
+                  {result.factors.length > 0 && (
+                    <div className="mt-5 rounded-xl bg-white/[0.06] p-4">
+                      <p className="text-[12px] tracking-wide text-white/50 uppercase">
+                        Что повлияло на цену
+                      </p>
+                      <ul className="mt-2 space-y-1.5 text-[13px]">
+                        {result.factors.map((f) => (
+                          <li key={f.label} className="flex justify-between gap-3">
+                            <span className="text-white/65">{f.label}</span>
+                            <span className="tnum font-medium text-gold-300">{f.value}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   <Button
                     size="lg"
                     className="mt-6 w-full"
@@ -342,10 +373,8 @@ export function CalculatorSection() {
                           result.tariff.name +
                           ', ' +
                           area +
-                          ' м², ' +
+                          ' м², от ' +
                           formatMoney(roundTo(result.min, 10000)) +
-                          ' — ' +
-                          formatMoney(roundTo(result.max, 10000)) +
                           '.',
                         payload: {
                           region: region.name,
@@ -368,10 +397,10 @@ export function CalculatorSection() {
               )}
             </div>
 
-            <p className="mt-4 flex items-start gap-2 text-[13px] leading-snug text-white/50">
+            <p className="relative mt-4 flex items-start gap-2 text-[13px] leading-snug text-white/50">
               <Gauge aria-hidden className="mt-0.5 size-4 shrink-0 text-gold-300" />
-              Вилка ±10% учитывает состояние квартиры и сложность геометрии. После замера цифра
-              становится фиксированной.
+              Чистовые материалы сюда не входят — их подбираете вы, и бюджет зависит от вкуса.
+              После замера цифра становится фиксированной.
             </p>
           </div>
         </div>

@@ -217,6 +217,51 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE INDEX IF NOT EXISTS idx_events_created ON events(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_events_type    ON events(type, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS tariff_notes (
+  id     INTEGER PRIMARY KEY AUTOINCREMENT,
+  title  TEXT NOT NULL,
+  value  TEXT NOT NULL DEFAULT '',
+  note   TEXT NOT NULL DEFAULT '',
+  sort   INTEGER NOT NULL DEFAULT 0,
+  active INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS calc_extras (
+  id     TEXT PRIMARY KEY,
+  label  TEXT NOT NULL,
+  hint   TEXT NOT NULL DEFAULT '',
+  kind   TEXT NOT NULL DEFAULT 'per_m2' CHECK (kind IN ('per_m2','fixed','per_bath')),
+  amount INTEGER NOT NULL DEFAULT 0,
+  sort   INTEGER NOT NULL DEFAULT 0,
+  active INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS area_tiers (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  area_from INTEGER NOT NULL DEFAULT 0,
+  k         REAL NOT NULL DEFAULT 1,
+  label     TEXT NOT NULL DEFAULT '',
+  sort      INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS hero_features (
+  id    INTEGER PRIMARY KEY AUTOINCREMENT,
+  icon  TEXT NOT NULL DEFAULT 'shield',
+  title TEXT NOT NULL,
+  text  TEXT NOT NULL DEFAULT '',
+  sort  INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS partners (
+  id     INTEGER PRIMARY KEY AUTOINCREMENT,
+  name   TEXT NOT NULL,
+  note   TEXT NOT NULL DEFAULT '',
+  logo   TEXT NOT NULL DEFAULT '',
+  url    TEXT NOT NULL DEFAULT '',
+  sort   INTEGER NOT NULL DEFAULT 0,
+  active INTEGER NOT NULL DEFAULT 1
+);
+
 CREATE TABLE IF NOT EXISTS media (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   filename      TEXT NOT NULL UNIQUE,
@@ -226,6 +271,28 @@ CREATE TABLE IF NOT EXISTS media (
   created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 `)
+
+/**
+ * Дозаливка столбцов в уже существующие таблицы.
+ * SQLite не умеет ADD COLUMN IF NOT EXISTS, поэтому сверяемся с pragma.
+ */
+function addColumn(table, column, definition) {
+  const has = db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column)
+  if (!has) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+}
+
+// Строку прайса можно скрыть с сайта, оставив в PDF; к ней можно дать комментарий
+addColumn('price_items', 'comment', "TEXT NOT NULL DEFAULT ''")
+addColumn('price_items', 'active', 'INTEGER NOT NULL DEFAULT 1')
+addColumn('price_items', 'emphasis', "TEXT NOT NULL DEFAULT ''")
+
+// Сколько позиций показывать на сайте: 0 — все, остальные уходят в PDF
+addColumn('price_groups', 'visible_limit', 'INTEGER NOT NULL DEFAULT 0')
+
+// «от 4 900 ₽/м²» против фиксированной цены + оговорка про материалы
+addColumn('tariffs', 'price_from', 'INTEGER NOT NULL DEFAULT 1')
+addColumn('tariffs', 'materials_note', "TEXT NOT NULL DEFAULT ''")
+addColumn('tariff_items', 'emphasis', "TEXT NOT NULL DEFAULT ''")
 
 /** Значения настроек по умолчанию — создаются один раз, потом правятся из админки. */
 export const DEFAULT_SETTINGS = {
@@ -257,6 +324,24 @@ export const DEFAULT_SETTINGS = {
   seoRobots: 'index',
   yandexVerification: '',
   googleVerification: '',
+
+  // Главный экран: какие тарифы показывать ценой. Пусто — выбираются автоматически.
+  heroTariffA: '',
+  heroTariffB: '',
+  heroPriceLabelA: '',
+  heroPriceLabelB: '',
+
+  // Калькулятор: насколько каждая лишняя комната и санузел усложняют работу
+  calcRoomK: '2',
+  calcBathK: '6',
+  calcSpread: '10',
+  calcMaterialsLabel: 'Черновые материалы',
+  calcMaterialsHint:
+    'Чистовые материалы (плитка, ламинат, обои, сантехника) считаются отдельно — их выбираете вы.',
+
+  // Прайс: сколько позиций в группе показывать на сайте по умолчанию
+  priceVisibleLimit: '10',
+  pricePdfNote: 'Полный прайс со всеми позициями — в PDF по кнопке ниже.',
 }
 
 const insertSetting = db.prepare(

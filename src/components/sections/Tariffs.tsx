@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Check, Minus, Sofa } from 'lucide-react'
+import { Check, Info, Minus, Sofa } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
 import { Segmented } from '@/components/ui/Segmented'
 import { Button } from '@/components/ui/Button'
+import { RichText } from '@/components/ui/RichText'
 import { type PropertyType } from '@/lib/calc'
 import { useContent } from '@/lib/content'
 import { formatDays, formatMoney, roundTo } from '@/lib/format'
@@ -14,12 +15,11 @@ const options = [
   { id: 'old' as PropertyType, label: 'Вторичка', sub: 'с демонтажом и заменой труб' },
 ]
 
-
 export function Tariffs() {
   const [property, setProperty] = useState<PropertyType>('new')
   const { region } = useRegion()
   const { openLead } = useLeadModal()
-  const { tariffs, furnishingAddon, settings } = useContent()
+  const { tariffs, furnishingAddon, tariffNotes, settings } = useContent()
 
   const sampleArea = settings.sampleArea || 50
   const list = tariffs.filter((t) => t.property === property)
@@ -32,8 +32,8 @@ export function Tariffs() {
       title="Сколько стоит ремонт и что именно входит"
       lead={
         <>
-          Цены за м² в {region.nameIn}. В тарифах без пометки «с материалами» указана только
-          стоимость работ — материалы вы закупаете сами по нашей спецификации или доверяете нам.
+          Цены за м² в {region.nameIn}. Это стоимость работ — черновые и чистовые материалы
+          считаются отдельно, что почём, написано под карточками.
         </>
       }
       headerAside={
@@ -45,7 +45,9 @@ export function Tariffs() {
         />
       }
     >
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      {/* Гибкая раскладка вместо сетки: когда тарифов меньше пяти,
+          ряд центрируется, а не липнет к левому краю */}
+      <div className="flex flex-wrap justify-center gap-5">
         {list.map((t) => {
           const perM2 = t.pricePerM2 * region.k
           const sample = roundTo(perM2 * sampleArea, 5000)
@@ -60,7 +62,8 @@ export function Tariffs() {
             <article
               key={t.id}
               className={
-                'group relative flex flex-col overflow-hidden rounded-2xl border p-6 transition-[transform,box-shadow,border-color] duration-300 ease-[var(--ease-out-soft)] hover:-translate-y-1 hover:shadow-lift ' +
+                'group relative flex w-full flex-col overflow-hidden rounded-2xl border p-6 transition-[transform,box-shadow,border-color] duration-300 ease-[var(--ease-out-soft)] hover:-translate-y-1 hover:shadow-lift ' +
+                'md:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.834rem)] xl:w-[calc(20%-1rem)] ' +
                 (hot
                   ? 'border-navy bg-navy text-white shadow-lift'
                   : 'border-line bg-white hover:border-navy/25')
@@ -80,7 +83,6 @@ export function Tariffs() {
                 />
               )}
 
-              {/* Слот бейджа одинаковой высоты во всех карточках — иначе заголовки разъезжаются */}
               <div className="relative mb-4 flex h-6 items-center">
                 {hot && (
                   <span className="inline-flex items-center rounded-full bg-gold px-2.5 py-1 font-display text-[11px] leading-none font-medium tracking-wide text-white uppercase">
@@ -102,8 +104,18 @@ export function Tariffs() {
                 {t.summary}
               </p>
 
-              <p className="tnum relative mt-4 font-display text-[34px] leading-none font-bold">
-                {formatMoney(perM2)}
+              <p className="tnum relative mt-4 font-display leading-none font-bold">
+                {t.priceFrom && (
+                  <span
+                    className={
+                      'mr-1.5 align-middle text-base font-medium ' +
+                      (hot ? 'text-white/60' : 'text-subtle')
+                    }
+                  >
+                    от
+                  </span>
+                )}
+                <span className="text-[32px]">{formatMoney(perM2)}</span>
                 <span className={'text-base font-normal ' + (hot ? 'text-white/55' : 'text-subtle')}>
                   /м²
                 </span>
@@ -111,6 +123,18 @@ export function Tariffs() {
               <p className={'relative mt-2 text-[13px] ' + (hot ? 'text-white/55' : 'text-subtle')}>
                 {t.withMaterials ? 'работы и материалы' : 'только работы'}
               </p>
+
+              {t.materialsNote && (
+                <p
+                  className={
+                    'relative mt-2 flex gap-1.5 text-[12px] leading-snug ' +
+                    (hot ? 'text-gold-300' : 'text-gold')
+                  }
+                >
+                  <Info aria-hidden className="mt-0.5 size-3.5 shrink-0" />
+                  {t.materialsNote}
+                </p>
+              )}
 
               <div
                 aria-hidden
@@ -134,18 +158,21 @@ export function Tariffs() {
 
               <ul className="relative mt-6 flex-1 space-y-2.5 text-[14px]">
                 {t.includes.map((i) => (
-                  <li key={i} className="flex gap-2.5">
+                  <li key={i.text} className="flex gap-2.5">
                     <Check
                       aria-hidden
                       className={'mt-0.5 size-4 shrink-0 ' + (hot ? 'text-gold-300' : 'text-gold')}
                     />
-                    <span>{i}</span>
+                    <RichText text={i.text} emphasis={i.emphasis} />
                   </li>
                 ))}
-                {t.excludes?.map((i) => (
-                  <li key={i} className={'flex gap-2.5 ' + (hot ? 'text-white/45' : 'text-subtle')}>
+                {t.excludes.map((i) => (
+                  <li
+                    key={i.text}
+                    className={'flex gap-2.5 ' + (hot ? 'text-white/45' : 'text-subtle')}
+                  >
                     <Minus aria-hidden className="mt-0.5 size-4 shrink-0" />
-                    <span>{i}</span>
+                    <RichText text={i.text} emphasis={i.emphasis} />
                   </li>
                 ))}
               </ul>
@@ -171,6 +198,33 @@ export function Tariffs() {
           )
         })}
       </div>
+
+      {/* Что считается отдельно от тарифа */}
+      {tariffNotes.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-line bg-white p-6 md:p-7">
+          <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
+            <Info aria-hidden className="size-5 text-gold" />
+            Что считается отдельно
+          </h3>
+          <p className="mt-1.5 text-sm text-subtle">
+            Чтобы в смете не было сюрпризов: эти суммы не входят в цену за метр выше.
+          </p>
+
+          <dl className="mt-5 grid gap-x-8 gap-y-4 md:grid-cols-2">
+            {tariffNotes.map((n) => (
+              <div key={n.title} className="border-t border-line pt-3.5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="font-display text-[15px] font-semibold">{n.title}</dt>
+                  <dd className="tnum shrink-0 font-display text-[15px] font-semibold text-gold">
+                    {n.value}
+                  </dd>
+                </div>
+                {n.note && <p className="mt-1 text-[13px] leading-relaxed text-subtle">{n.note}</p>}
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
 
       {/* Комплектация мебелью — отдельная опция поверх любого тарифа */}
       <div className="mt-6 grid gap-6 overflow-hidden rounded-2xl border border-gold/35 bg-gold-100 p-6 md:grid-cols-[1fr_auto] md:items-center md:p-8">

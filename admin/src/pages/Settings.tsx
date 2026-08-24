@@ -145,6 +145,118 @@ export function SettingsPage() {
           </fieldset>
         </Card>
 
+        <Card title="Первый экран, калькулятор и прайс">
+          <p className="mb-5 max-w-2xl text-[13px] text-subtle">
+            Тонкие настройки витрины: какие цены показывать в шапке, насколько усложняют работу
+            лишние комнаты и сколько строк прайса пускать на сайт.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Первая цена на главном экране"
+              hint="Идентификатор тарифа, например new-rough. Пусто — выберется сам."
+            >
+              <input
+                className="field"
+                value={s.heroTariffA ?? ''}
+                onChange={(e) => set('heroTariffA', e.target.value)}
+                placeholder="new-rough"
+              />
+            </Field>
+            <Field label="Подпись к первой цене" hint="Пусто — возьмётся название тарифа">
+              <input
+                className="field"
+                value={s.heroPriceLabelA ?? ''}
+                onChange={(e) => set('heroPriceLabelA', e.target.value)}
+                placeholder="Черновой ремонт"
+              />
+            </Field>
+            <Field label="Вторая цена на главном экране" hint="Например new-turnkey">
+              <input
+                className="field"
+                value={s.heroTariffB ?? ''}
+                onChange={(e) => set('heroTariffB', e.target.value)}
+                placeholder="new-turnkey"
+              />
+            </Field>
+            <Field label="Подпись ко второй цене">
+              <input
+                className="field"
+                value={s.heroPriceLabelB ?? ''}
+                onChange={(e) => set('heroPriceLabelB', e.target.value)}
+                placeholder="Под ключ"
+              />
+            </Field>
+          </div>
+
+          <div className="mt-6 grid gap-4 border-t border-line pt-5 sm:grid-cols-3">
+            <Field
+              label="Надбавка за комнату, %"
+              hint="За каждую комнату сверх первой: больше стен, углов и дверей"
+            >
+              <input
+                className="field tnum"
+                type="number"
+                value={s.calcRoomK ?? ''}
+                onChange={(e) => set('calcRoomK', e.target.value)}
+              />
+            </Field>
+            <Field label="Надбавка за санузел, %" hint="За каждый санузел сверх первого">
+              <input
+                className="field tnum"
+                type="number"
+                value={s.calcBathK ?? ''}
+                onChange={(e) => set('calcBathK', e.target.value)}
+              />
+            </Field>
+            <Field label="Ширина вилки, %" hint="Насколько верхняя граница выше расчёта">
+              <input
+                className="field tnum"
+                type="number"
+                value={s.calcSpread ?? ''}
+                onChange={(e) => set('calcSpread', e.target.value)}
+              />
+            </Field>
+
+            <Field label="Как называть материалы в калькуляторе" className="sm:col-span-1">
+              <input
+                className="field"
+                value={s.calcMaterialsLabel ?? ''}
+                onChange={(e) => set('calcMaterialsLabel', e.target.value)}
+              />
+            </Field>
+            <Field label="Пояснение под материалами" className="sm:col-span-2">
+              <textarea
+                className="field"
+                rows={2}
+                value={s.calcMaterialsHint ?? ''}
+                onChange={(e) => set('calcMaterialsHint', e.target.value)}
+              />
+            </Field>
+          </div>
+
+          <div className="mt-6 grid gap-4 border-t border-line pt-5 sm:grid-cols-2">
+            <Field
+              label="Строк прайса на сайте"
+              hint="Сколько позиций показывать в группе. Остальные уйдут в PDF. 0 — показывать все."
+            >
+              <input
+                className="field tnum"
+                type="number"
+                value={s.priceVisibleLimit ?? ''}
+                onChange={(e) => set('priceVisibleLimit', e.target.value)}
+              />
+            </Field>
+            <Field label="Подпись под прайсом">
+              <input
+                className="field"
+                value={s.pricePdfNote ?? ''}
+                onChange={(e) => set('pricePdfNote', e.target.value)}
+              />
+            </Field>
+          </div>
+        </Card>
+
         <Card title="Комплектация мебелью">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Название опции">

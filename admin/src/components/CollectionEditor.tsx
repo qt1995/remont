@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from 'lucide-react'
 import { api, type Row } from '@/lib/api'
 import { Badge, Button, Card, Empty, Field, Modal, Spinner, useConfirm, useToast } from '@/components/ui'
 import { ImagePicker } from '@/components/ImagePicker'
+import { RowTable, type ColumnDef } from '@/components/RowTable'
 
 export type FieldDef = {
   name: string
@@ -20,7 +21,14 @@ export type ChildDef = {
   /** Ключ массива в объекте (сервер всегда отдаёт items) */
   label: string
   addLabel: string
-  fields: FieldDef[]
+  columns: ColumnDef[]
+  /** Переключатели «жирный / курсив» для строки */
+  formatting?: boolean
+  /** Строку можно скрыть с сайта, оставив в PDF */
+  hideable?: boolean
+  /** Имя поля с комментарием под строкой */
+  commentField?: string
+  hint?: string
 }
 
 type Props = {
@@ -52,10 +60,12 @@ export function CollectionEditor({
 }: Props) {
   const [rows, setRows] = useState<Row[] | null>(null)
   const [editing, setEditing] = useState<Row | null>(null)
+  const [original, setOriginal] = useState('')
   const [isNew, setIsNew] = useState(false)
   const [saving, setSaving] = useState(false)
   const { notify } = useToast()
   const { confirm, dialog } = useConfirm()
+  const { confirm: confirmClose, dialog: closeDialog } = useConfirm()
 
   const load = useCallback(() => {
     api
@@ -74,12 +84,42 @@ export function CollectionEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, child])
 
+  const dirty = !!editing && JSON.stringify(editing) !== original
+
+  // Уйти из формы с несохранёнными правками легко, а заметить это — нет.
+  // Поэтому спрашиваем и при закрытии окна, и при уходе со страницы.
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
+
+  const closeEditor = async () => {
+    const ok =
+      !dirty ||
+      (await confirmClose(
+        'Вы что-то поменяли, но не нажали «Сохранить». Закрыть и потерять правки?',
+        {
+          title: 'Правки не сохранены',
+          confirmLabel: 'Закрыть без сохранения',
+          cancelLabel: 'Вернуться к правкам',
+        },
+      ))
+    if (!ok) return
+    setEditing(null)
+  }
+
   const save = async () => {
     if (!editing) return
     setSaving(true)
     try {
       if (isNew) await api.post(endpoint, editing)
       else await api.put(endpoint + '/' + editing.id, editing)
+      setOriginal(JSON.stringify(editing))
       setEditing(null)
       load()
       notify('Сохранено')
@@ -139,7 +179,9 @@ export function CollectionEditor({
           <Button
             variant="primary"
             onClick={() => {
-              setEditing({ ...emptyRow })
+              const row = { ...emptyRow }
+              setEditing(row)
+              setOriginal(JSON.stringify(row))
               setIsNew(true)
             }}
           >
@@ -198,7 +240,9 @@ export function CollectionEditor({
 
                 <Button
                   onClick={() => {
-                    setEditing({ ...row })
+                    const copy = { ...row }
+                    setEditing(copy)
+                    setOriginal(JSON.stringify(copy))
                     setIsNew(false)
                   }}
                 >
@@ -216,8 +260,8 @@ export function CollectionEditor({
 
       <Modal
         open={!!editing}
-        onClose={() => setEditing(null)}
-        title={isNew ? addLabel : 'Редактирование'}
+        onClose={closeEditor}
+        title={(isNew ? addLabel : 'Редактирование') + (dirty ? ' • не сохранено' : '')}
         wide={!!child}
       >
         {editing && (
@@ -254,15 +298,26 @@ export function CollectionEditor({
             </div>
 
             {child && (
-              <ChildList
-                def={child}
-                rows={(editing.items as Row[]) ?? []}
-                onChange={(items) => setEditing({ ...editing, items })}
-              />
+              <fieldset className="mt-6 border-t border-line pt-5">
+                <legend className="sr-only">{child.label}</legend>
+                <div className="mb-3">
+                  <h3 className="font-display text-[15px] font-semibold">{child.label}</h3>
+                  {child.hint && <p className="mt-1 text-[13px] text-subtle">{child.hint}</p>}
+                </div>
+                <RowTable
+                  columns={child.columns}
+                  rows={(editing.items as Row[]) ?? []}
+                  onChange={(items) => setEditing({ ...editing, items })}
+                  addLabel={child.addLabel}
+                  formatting={child.formatting}
+                  hideable={child.hideable}
+                  commentField={child.commentField}
+                />
+              </fieldset>
             )}
 
             <div className="mt-6 flex justify-end gap-2 border-t border-line pt-5">
-              <Button type="button" onClick={() => setEditing(null)}>
+              <Button type="button" onClick={closeEditor}>
                 Отмена
               </Button>
               <Button type="submit" variant="primary" loading={saving}>
@@ -274,6 +329,7 @@ export function CollectionEditor({
       </Modal>
 
       {dialog}
+      {closeDialog}
     </>
   )
 }
@@ -353,94 +409,5 @@ export function FieldInput({
         onChange={(e) => onChange(def.type === 'number' ? Number(e.target.value) : e.target.value)}
       />
     </Field>
-  )
-}
-
-function ChildList({
-  def,
-  rows,
-  onChange,
-}: {
-  def: ChildDef
-  rows: Row[]
-  onChange: (rows: Row[]) => void
-}) {
-  const update = (i: number, patch: Record<string, unknown>) =>
-    onChange(rows.map((r, j) => (i === j ? { ...r, ...patch } : r)))
-
-  const blank = Object.fromEntries(def.fields.map((f) => [f.name, f.type === 'number' ? 0 : '']))
-
-  return (
-    <fieldset className="mt-6 border-t border-line pt-5">
-      <legend className="sr-only">{def.label}</legend>
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-display text-[15px] font-semibold">{def.label}</h3>
-        <Button type="button" onClick={() => onChange([...rows, { id: 'new-' + rows.length, ...blank }])}>
-          <Plus aria-hidden className="size-4" />
-          {def.addLabel}
-        </Button>
-      </div>
-
-      {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-line px-4 py-6 text-center text-sm text-subtle">
-          Пока ни одного пункта.
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {rows.map((row, i) => (
-            <li key={i} className="flex items-start gap-2 rounded-lg border border-line bg-sand/50 p-2.5">
-              <div className="flex flex-col pt-1.5">
-                <button
-                  type="button"
-                  aria-label="Выше"
-                  disabled={i === 0}
-                  onClick={() => {
-                    const n = [...rows]
-                    ;[n[i - 1], n[i]] = [n[i], n[i - 1]]
-                    onChange(n)
-                  }}
-                  className="cursor-pointer rounded p-0.5 text-subtle hover:text-navy disabled:opacity-25"
-                >
-                  <ChevronUp aria-hidden className="size-3.5" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Ниже"
-                  disabled={i === rows.length - 1}
-                  onClick={() => {
-                    const n = [...rows]
-                    ;[n[i], n[i + 1]] = [n[i + 1], n[i]]
-                    onChange(n)
-                  }}
-                  className="cursor-pointer rounded p-0.5 text-subtle hover:text-navy disabled:opacity-25"
-                >
-                  <ChevronDown aria-hidden className="size-3.5" />
-                </button>
-              </div>
-
-              <div className="grid flex-1 gap-2 sm:grid-cols-[2fr_repeat(auto-fit,minmax(90px,1fr))]">
-                {def.fields.map((f) => (
-                  <FieldInput
-                    key={f.name}
-                    def={{ ...f, label: i === 0 ? f.label : '' }}
-                    value={row[f.name]}
-                    onChange={(v) => update(i, { [f.name]: v })}
-                  />
-                ))}
-              </div>
-
-              <button
-                type="button"
-                aria-label="Убрать пункт"
-                onClick={() => onChange(rows.filter((_, j) => j !== i))}
-                className="mt-1 cursor-pointer rounded p-1.5 text-subtle hover:bg-bad-bg hover:text-bad"
-              >
-                <Trash2 aria-hidden className="size-4" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </fieldset>
   )
 }

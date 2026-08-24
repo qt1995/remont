@@ -14,14 +14,19 @@ import { Guarantees } from '@/components/sections/Guarantees'
 import { Reviews } from '@/components/sections/Reviews'
 import { Faq } from '@/components/sections/Faq'
 import { Contacts } from '@/components/sections/Contacts'
+import { Partners } from '@/components/sections/Partners'
 import { RegionProvider } from '@/lib/region'
 import { LeadModalProvider } from '@/lib/leadModal'
 import { ContentProvider, useContent } from '@/lib/content'
 import { initMetrika, track } from '@/lib/analytics'
+import { useScrollRestore } from '@/lib/useScrollRestore'
 
 /** Счётчик Метрики и просмотр страницы — после того, как настройки пришли с сервера. */
 function Analytics() {
-  const { settings } = useContent()
+  const { settings, tariffs } = useContent()
+
+  // Контент пришёл — страница доросла до своей высоты, можно вернуть прокрутку
+  useScrollRestore(tariffs.length > 0)
 
   useEffect(() => {
     if (settings.yandexMetrikaId) initMetrika(settings.yandexMetrikaId)
@@ -59,6 +64,7 @@ export default function App() {
             <Pains />
             <Process />
             <Guarantees />
+            <Partners />
             <Reviews />
             <Faq />
             <Contacts />

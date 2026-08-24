@@ -329,11 +329,21 @@ export function Modal({
   )
 }
 
+type ConfirmOptions = {
+  title?: string
+  confirmLabel?: string
+  cancelLabel?: string
+  tone?: 'danger' | 'dark'
+}
+
+type ConfirmState = ConfirmOptions & { text: string; resolve: (v: boolean) => void }
+
 export function useConfirm() {
-  const [state, setState] = useState<{ text: string; resolve: (v: boolean) => void } | null>(null)
+  const [state, setState] = useState<ConfirmState | null>(null)
 
   const confirm = useCallback(
-    (text: string) => new Promise<boolean>((resolve) => setState({ text, resolve })),
+    (text: string, options: ConfirmOptions = {}) =>
+      new Promise<boolean>((resolve) => setState({ text, resolve, ...options })),
     [],
   )
 
@@ -343,12 +353,12 @@ export function useConfirm() {
   }
 
   const dialog = (
-    <Modal open={!!state} onClose={() => done(false)} title="Подтвердите действие">
+    <Modal open={!!state} onClose={() => done(false)} title={state?.title ?? 'Подтвердите действие'}>
       <p className="text-[15px]">{state?.text}</p>
       <div className="mt-6 flex justify-end gap-2">
-        <Button onClick={() => done(false)}>Отмена</Button>
-        <Button variant="danger" onClick={() => done(true)}>
-          Удалить
+        <Button onClick={() => done(false)}>{state?.cancelLabel ?? 'Отмена'}</Button>
+        <Button variant={state?.tone ?? 'danger'} onClick={() => done(true)}>
+          {state?.confirmLabel ?? 'Удалить'}
         </Button>
       </div>
     </Modal>

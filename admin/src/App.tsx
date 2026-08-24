@@ -9,6 +9,7 @@ import {
   Layers,
   LogOut,
   Menu,
+  Calculator,
   Receipt,
   Settings as SettingsIcon,
   X,
@@ -19,7 +20,13 @@ import { useHashRoute } from '@/lib/useHashRoute'
 import { Login } from '@/pages/Login'
 import { Dashboard } from '@/pages/Dashboard'
 import { Leads } from '@/pages/Leads'
-import { ContentPage, PricePage, TariffsPage, WorksPage } from '@/pages/collections'
+import {
+  CalculatorPage,
+  ContentPage,
+  PricePage,
+  TariffsPage,
+  WorksPage,
+} from '@/pages/collections'
 import { SettingsPage } from '@/pages/Settings'
 import { MediaPage } from '@/pages/Media'
 
@@ -28,6 +35,7 @@ const NAV = [
   { id: 'leads', label: 'Заявки', icon: Inbox },
   { id: 'tariffs', label: 'Тарифы', icon: Layers },
   { id: 'price', label: 'Прайс', icon: Receipt },
+  { id: 'calc', label: 'Калькулятор', icon: Calculator },
   { id: 'works', label: 'Работы', icon: Images },
   { id: 'content', label: 'Тексты', icon: FileText },
   { id: 'media', label: 'Файлы', icon: FolderOpen },
@@ -156,6 +164,7 @@ function Shell() {
         {route === 'leads' && <Leads />}
         {route === 'tariffs' && <TariffsPage />}
         {route === 'price' && <PricePage />}
+        {route === 'calc' && <CalculatorPage />}
         {route === 'works' && <WorksPage />}
         {route === 'content' && <ContentPage />}
         {route === 'media' && <MediaPage />}

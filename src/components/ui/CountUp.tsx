@@ -4,22 +4,23 @@ import { useEffect, useRef, useState } from 'react'
 export function CountUp({ to, duration = 1100 }: { to: number; duration?: number }) {
   const [value, setValue] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
-  const done = useRef(false)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
+
+    // Значение поменяли в админке — начинаем набор заново, а не показываем старое.
+    let done = false
+    let raf = 0
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setValue(to)
       return
     }
 
-    let raf = 0
-
     const run = () => {
-      if (done.current) return
-      done.current = true
+      if (done) return
+      done = true
       const start = performance.now()
       const tick = (now: number) => {
         const p = Math.min(1, (now - start) / duration)
@@ -32,7 +33,7 @@ export function CountUp({ to, duration = 1100 }: { to: number; duration?: number
 
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting || done.current) return
+        if (!entry.isIntersecting) return
         io.disconnect()
         run()
       },
@@ -44,8 +45,8 @@ export function CountUp({ to, duration = 1100 }: { to: number; duration?: number
     // Страховка: если наблюдатель не сработал, цифра всё равно окажется на месте.
     const fallback = window.setTimeout(() => {
       io.disconnect()
-      if (!done.current) {
-        done.current = true
+      if (!done) {
+        done = true
         setValue(to)
       }
     }, 2500)

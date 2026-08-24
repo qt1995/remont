@@ -19,6 +19,11 @@ const seed = JSON.parse(readFileSync(resolve(root, 'data', 'seed.json'), 'utf8')
 const force = process.argv.includes('--force')
 
 const CONTENT_TABLES = [
+  'tariff_notes',
+  'calc_extras',
+  'area_tiers',
+  'hero_features',
+  'partners',
   'tariff_items',
   'tariffs',
   'price_items',
@@ -167,6 +172,78 @@ const run = db.transaction(() => {
     seed.videoReviews.forEach((r, i) =>
       stmt.run(r.name, r.object, r.duration, '/portfolio/work-' + ((i % 6) + 1) + '.svg', '', i),
     )
+  }
+
+  if (count('tariff_notes') === 0) {
+    const stmt = db.prepare(
+      'INSERT INTO tariff_notes (title, value, note, sort, active) VALUES (?, ?, ?, ?, 1)',
+    )
+    const notes = [
+      [
+        'Черновые материалы',
+        'в среднем 5 000 ₽/м²',
+        'Считаются отдельно от работ: смеси, профиль, гипсокартон, трубы, кабель, стяжка.',
+      ],
+      [
+        'Чистовые материалы',
+        'от 5 000 ₽/м²',
+        'Плитка, ламинат, обои, сантехника, двери. Выбираете сами — бюджет зависит от вкуса.',
+      ],
+      ['Дизайн-проект', '3 000 ₽/м²', 'Планировочное решение и рабочие чертежи, без 3D.'],
+      ['Дизайн-проект с 3D', '4 000 ₽/м²', 'То же плюс визуализация каждой комнаты.'],
+    ]
+    notes.forEach((n, i) => stmt.run(n[0], n[1], n[2], i))
+  }
+
+  if (count('calc_extras') === 0) {
+    const stmt = db.prepare(
+      'INSERT INTO calc_extras (id, label, hint, kind, amount, sort, active) VALUES (?, ?, ?, ?, ?, ?, 1)',
+    )
+    const extras = [
+      ['design', 'Дизайн-проект', 'Планировка и рабочие чертежи, без 3D', 'per_m2', 3000],
+      ['design3d', 'Дизайн-проект с 3D', 'То же плюс визуализация каждой комнаты', 'per_m2', 4000],
+      ['furniture', 'Мебель и комплектация', 'Подбор, закупка, доставка и сборка', 'per_m2', 10000],
+      ['kitchen', 'Кухня на заказ', 'Проект, изготовление и монтаж', 'fixed', 250000],
+      ['warmFloor', 'Тёплые полы', 'Электрический контур с терморегулятором', 'per_bath', 26000],
+      ['smartLight', 'Сценарный свет', 'Диммеры, подсветка ниш, управление со смартфона', 'per_m2', 1200],
+    ]
+    extras.forEach((e, i) => stmt.run(e[0], e[1], e[2], e[3], e[4], i))
+  }
+
+  if (count('area_tiers') === 0) {
+    const stmt = db.prepare('INSERT INTO area_tiers (area_from, k, label, sort) VALUES (?, ?, ?, ?)')
+    const tiers = [
+      [0, 1.1, 'Маленький объём — выезды и логистика те же, а метров меньше'],
+      [40, 1, 'Базовый объём'],
+      [80, 0.95, 'Большая площадь — работаем дешевле за метр'],
+      [120, 0.9, 'Очень большая площадь'],
+    ]
+    tiers.forEach((t, i) => stmt.run(t[0], t[1], t[2], i))
+  }
+
+  if (count('hero_features') === 0) {
+    const stmt = db.prepare('INSERT INTO hero_features (icon, title, text, sort) VALUES (?, ?, ?, ?)')
+    const items = [
+      ['file', 'Фиксированная смета', 'Сумма из договора не растёт по ходу работ'],
+      ['clock', 'Штраф за просрочку', 'Сдвинули срок по своей вине — вычитаем из суммы'],
+      ['shield', 'Гарантия 2 года', 'На работы и на инженерные системы'],
+      ['ruler', 'Замер бесплатно', 'Приедем, обмерим и посчитаем без обязательств'],
+    ]
+    items.forEach((x, i) => stmt.run(x[0], x[1], x[2], i))
+  }
+
+  if (count('partners') === 0) {
+    const stmt = db.prepare(
+      'INSERT INTO partners (name, note, logo, url, sort, active) VALUES (?, ?, ?, ?, ?, 1)',
+    )
+    // Заглушки: заменить на реальных поставщиков в админке
+    const items = [
+      ['Поставщик плитки', 'Склад в городе, отгрузка день в день', '', ''],
+      ['Поставщик сантехники', 'Гарантия и сервис по всей линейке', '', ''],
+      ['Салон дверей', 'Замер и монтаж в один визит', '', ''],
+      ['Мебельная фабрика', 'Кухни и шкафы на заказ', '', ''],
+    ]
+    items.forEach((x, i) => stmt.run(x[0], x[1], x[2], x[3], i))
   }
 
   if (count('faq') === 0) {

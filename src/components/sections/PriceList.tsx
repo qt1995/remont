@@ -1,17 +1,18 @@
 import { useMemo, useState } from 'react'
-import { ChevronDown, Search } from 'lucide-react'
+import { ChevronDown, Download, Search } from 'lucide-react'
 import { Section } from '@/components/ui/Section'
-import { Button } from '@/components/ui/Button'
-import { useContent } from '@/lib/content'
+import { Button, ButtonLink } from '@/components/ui/Button'
+import { useContent, API_ENABLED, API_URL } from '@/lib/content'
+import { RichText } from '@/components/ui/RichText'
 import { track } from '@/lib/analytics'
-import { formatMoney } from '@/lib/format'
+import { formatMoney, plural } from '@/lib/format'
 import { useRegion } from '@/lib/region'
 import { useLeadModal } from '@/lib/leadModal'
 
 export function PriceList() {
   const { region } = useRegion()
   const { openLead } = useLeadModal()
-  const { priceGroups } = useContent()
+  const { priceGroups, settings } = useContent()
   const [query, setQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
 
@@ -32,8 +33,9 @@ export function PriceList() {
 
   const total = priceGroups.reduce((acc, g) => acc + g.items.length, 0)
 
-  // Первая группа открыта по умолчанию, но список приходит из админки
-  const openGroup = openId ?? priceGroups[0]?.id ?? null
+  // Ни одна группа не обязана быть открытой: держать что-то раскрытым
+  // постоянно — лишний визуальный шум
+  const openGroup = openId
 
   return (
     <Section
@@ -98,6 +100,7 @@ export function PriceList() {
                     aria-expanded={open}
                     aria-controls={'price-' + g.id}
                     onClick={() => setOpenId(open && !q ? null : g.id)}
+                    aria-label={(open ? 'Свернуть' : 'Развернуть') + ': ' + g.name}
                     className="flex w-full cursor-pointer items-center justify-between gap-4 bg-white px-5 py-5 text-left transition-colors hover:bg-sand md:px-7"
                   >
                     <span>
@@ -106,7 +109,7 @@ export function PriceList() {
                     </span>
                     <span className="flex items-center gap-3">
                       <span className="tnum hidden text-sm text-subtle sm:block">
-                        {g.items.length} поз.
+                        {g.total} поз.
                       </span>
                       <ChevronDown
                         aria-hidden
@@ -138,9 +141,16 @@ export function PriceList() {
                     <tbody>
                       {g.items.map((i) => (
                         <tr key={i.name} className="border-t border-line/70">
-                          <td className="py-3 pr-4 text-[15px]">{i.name}</td>
+                          <td className="py-3 pr-4 text-[15px]">
+                            <RichText text={i.name} emphasis={i.emphasis} />
+                            {i.comment && (
+                              <span className="mt-0.5 block text-[13px] leading-snug text-subtle">
+                                {i.comment}
+                              </span>
+                            )}
+                          </td>
                           <td className="tnum py-3 text-right font-display font-medium whitespace-nowrap">
-                            от {formatMoney(i.price * region.k)}
+                            {i.price > 0 ? 'от ' + formatMoney(i.price * region.k) : '—'}
                           </td>
                           <td className="py-3 text-right text-sm whitespace-nowrap text-subtle">
                             {i.unit}
@@ -149,6 +159,13 @@ export function PriceList() {
                       ))}
                     </tbody>
                   </table>
+
+                  {g.hidden > 0 && (
+                    <p className="border-t border-line/70 pt-3 text-[13px] text-subtle">
+                      Ещё {g.hidden} {plural(g.hidden, ['позиция', 'позиции', 'позиций'])} этой
+                      группы — в полном прайсе PDF.
+                    </p>
+                  )}
                 </div>
               </div>
             )
@@ -158,22 +175,35 @@ export function PriceList() {
 
       <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-line bg-white p-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-2xl text-[15px] leading-relaxed text-navy-700">
-          Нужен полный прайс в PDF или смета по вашей планировке? Пришлём файл в мессенджер — там
-          видны объёмы, а не только цены за единицу.
+          {settings.pricePdfNote ||
+            'Полный прайс со всеми позициями — в PDF по кнопке справа.'}{' '}
+          Файл собирается из этой же таблицы, поэтому всегда актуален.
         </p>
-        <Button
-          className="shrink-0"
-          variant="dark"
-          onClick={() =>
-            openLead({
-              source: 'price-pdf',
-              title: 'Прайс-лист и пример сметы',
-              lead: 'Отправим полный прайс и пример реальной сметы на квартиру 58 м².',
-            })
-          }
-        >
-          Запросить прайс и пример сметы
-        </Button>
+
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {API_ENABLED && (
+            <ButtonLink
+              href={API_URL + '/api/price.pdf?region=' + region.id}
+              variant="dark"
+              onClick={() => track('price_pdf', { region: region.id })}
+            >
+              <Download aria-hidden className="size-4" />
+              Скачать прайс в PDF
+            </ButtonLink>
+          )}
+          <Button
+            variant="outline"
+            onClick={() =>
+              openLead({
+                source: 'price-estimate',
+                title: 'Смета по вашей планировке',
+                lead: 'Пришлём смету с объёмами под вашу квартиру — в ней те же строки, что в прайсе.',
+              })
+            }
+          >
+            Смету по моей квартире
+          </Button>
+        </div>
       </div>
     </Section>
   )

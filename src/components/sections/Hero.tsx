@@ -1,4 +1,13 @@
-import { Calculator, Clock, FileSignature, Ruler, ShieldCheck, Box } from 'lucide-react'
+import {
+  Box,
+  Calculator,
+  CheckCircle2,
+  Clock,
+  FileSignature,
+  Ruler,
+  ShieldCheck,
+  Wallet,
+} from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { CountUp } from '@/components/ui/CountUp'
 import { useLeadModal } from '@/lib/leadModal'
@@ -6,29 +15,37 @@ import { useRegion } from '@/lib/region'
 import { formatMoney } from '@/lib/format'
 import { useContent, mediaUrl } from '@/lib/content'
 
-const advantages = [
-  {
-    icon: FileSignature,
-    title: 'Фиксированная смета',
-    text: 'Сумма из договора не растёт по ходу работ',
-  },
-  { icon: Clock, title: 'Штраф за просрочку', text: 'Сдвинули срок по своей вине — вычитаем из суммы' },
-  { icon: ShieldCheck, title: 'Гарантия 5 лет', text: 'На работы; 2 года на инженерные системы' },
-  { icon: Ruler, title: 'Замер бесплатно', text: 'Приедем, обмерим и посчитаем без обязательств' },
-]
+/** Иконку выбирают в админке словом — здесь сопоставляем со значком. */
+const ICONS: Record<string, typeof ShieldCheck> = {
+  file: FileSignature,
+  clock: Clock,
+  shield: ShieldCheck,
+  ruler: Ruler,
+  wallet: Wallet,
+  box: Box,
+  check: CheckCircle2,
+}
 
 export function Hero() {
   const { openLead } = useLeadModal()
   const { region } = useRegion()
-  const { stats, tariffs, stageShots } = useContent()
+  const { stats, tariffs, stageShots, heroFeatures, settings } = useContent()
 
-  // Цены в шапке всегда берём из тарифов, а не из отдельных чисел
-  const rough = tariffs.find((t) => t.property === 'new' && !t.withMaterials)
-  const turnkey = tariffs.find((t) => t.id.includes('turnkey') && !t.withMaterials) ?? rough
+  // Какие тарифы показывать ценой — задаётся в админке; пусто — берём разумные по умолчанию
+  const byId = (id: string) => tariffs.find((t) => t.id === id)
+  const rough =
+    byId(settings.heroTariffA) ?? tariffs.find((t) => t.property === 'new' && !t.withMaterials)
+  const turnkey =
+    byId(settings.heroTariffB) ??
+    tariffs.find((t) => t.id.includes('turnkey') && !t.withMaterials) ??
+    rough
+
   const heroShot = stageShots[stageShots.length - 1]?.image ?? '/stages/3-furnished.svg'
 
   const roughPerM2 = (rough?.pricePerM2 ?? 4900) * region.k
   const turnkeyPerM2 = (turnkey?.pricePerM2 ?? 9900) * region.k
+  const labelA = settings.heroPriceLabelA || rough?.name || 'Черновой ремонт'
+  const labelB = settings.heroPriceLabelB || turnkey?.name || 'Под ключ'
 
   return (
     <section id="top" className="relative overflow-hidden bg-navy text-white">
@@ -83,9 +100,7 @@ export function Hero() {
 
             <div className="mt-9 flex flex-wrap items-stretch gap-x-8 gap-y-5 rounded-2xl border border-white/12 bg-white/[0.04] p-5 backdrop-blur-sm">
               <div>
-                <p className="text-[12px] tracking-[0.14em] text-white/45 uppercase">
-                  Черновой ремонт
-                </p>
+                <p className="text-[12px] tracking-[0.14em] text-white/45 uppercase">{labelA}</p>
                 <p className="tnum mt-1 font-display text-2xl font-semibold md:text-[28px]">
                   от {formatMoney(roughPerM2)}
                   <span className="text-base font-normal text-white/55">/м²</span>
@@ -93,7 +108,7 @@ export function Hero() {
               </div>
               <div className="w-px self-stretch bg-white/12" aria-hidden />
               <div>
-                <p className="text-[12px] tracking-[0.14em] text-white/45 uppercase">Под ключ</p>
+                <p className="text-[12px] tracking-[0.14em] text-white/45 uppercase">{labelB}</p>
                 <p className="tnum mt-1 font-display text-2xl font-semibold md:text-[28px]">
                   от {formatMoney(turnkeyPerM2)}
                   <span className="text-base font-normal text-white/55">/м²</span>
@@ -179,15 +194,18 @@ export function Hero() {
       {/* Полоса преимуществ */}
       <div className="relative border-t border-white/10 bg-navy-800/60">
         <ul className="container-page grid divide-y divide-white/10 sm:grid-cols-2 sm:divide-x lg:grid-cols-4">
-          {advantages.map((a) => (
+          {heroFeatures.map((a) => {
+            const Icon = ICONS[a.icon] ?? ShieldCheck
+            return (
             <li key={a.title} className="flex items-start gap-3.5 px-0 py-6 sm:px-6 sm:first:pl-0 lg:last:pr-0">
-              <a.icon aria-hidden className="mt-0.5 size-5 shrink-0 text-gold-300" />
+              <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-gold-300" />
               <span>
                 <span className="block font-display text-[15px] font-medium">{a.title}</span>
                 <span className="mt-1 block text-[13px] leading-snug text-white/55">{a.text}</span>
               </span>
             </li>
-          ))}
+            )
+          })}
         </ul>
       </div>
     </section>
